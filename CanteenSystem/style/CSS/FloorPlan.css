@@ -1,0 +1,56 @@
+﻿.room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+/* Phòng nhỏ gọn hơn để nằm ngang đẹp */
+.room {
+    min-height: 80px;
+    padding: 15px;
+    font-size: 1.1em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+    .room:hover {
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+.available {
+    background: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.occupied {
+    background: #f5a095;
+    border-color: #2196f3;
+}
+
+.vip {
+    border-color: #f1c40f;
+    background: #fff8e1;
+}
+
+.non-room {
+    background: #ecf0f1;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+/* Tooltip */
+.tooltip-inner {
+    background-color: #2c3e50;
+    color: white;
+    max-width: 300px;
+    padding: 10px 15px;
+    border-radius: 6px;
+}
