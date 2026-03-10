@@ -687,15 +687,6 @@ body {
         background: #E5E7EB;
     }
 
-/* ===== Calendar ===== */
-.calendar-container {
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 2rem;
-    box-shadow: var(--shadow-sm);
-}
-
 /* ===== Responsive Design ===== */
 @media (max-width: 768px) {
     .dashboard-container {
