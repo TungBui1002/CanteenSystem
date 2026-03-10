@@ -87,7 +87,6 @@
         setupNavigation();
         setupSidebarToggle();
         setupSearch();
-        setupCalendar();
         setupResponsive();
     });
 

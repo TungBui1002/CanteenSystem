@@ -353,6 +353,7 @@
     <Content Include="Views\MealOrders\Index.cshtml" />
     <Content Include="Views\Departments\Import.cshtml" />
     <Content Include="Views\Leaders\Import.cshtml" />
+    <Content Include="Views\Users\ResetPassword.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

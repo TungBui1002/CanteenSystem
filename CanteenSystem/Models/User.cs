@@ -20,7 +20,6 @@ namespace CanteenSystem.Models
         [Display(Name = "Tên đăng nhập (mã bộ phận)")]
         public string Username { get; set; }
 
-        [Required]
         [StringLength(100)]
         [Column("password")]
         public string Password { get; set; }  // BCrypt hash
