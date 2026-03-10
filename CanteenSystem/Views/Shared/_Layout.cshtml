@@ -34,81 +34,88 @@
                     Dashboard
                 </button>
 
-                <!-- Departments -->
-                <button class="nav-item @(currentController == "Departments" ? "active" : "")"
-                        onclick="location.href='@Url.Action("Index", "Departments")'">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 21h18M3 10h18M5 7l7-5 7 5M4 15h16v6H4z" />
-                    </svg>
-                    Bộ phận
-                </button>
-
-                <!-- Kitchens -->
-                <button class="nav-item @(currentController == "Kitchens" ? "active" : "")"
-                        onclick="location.href='@Url.Action("Index", "Kitchens")'">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    Nhà ăn
-                </button>
-
-                <!-- Leaders -->
-                <button class="nav-item @(currentController == "Leaders" ? "active" : "")"
-                        onclick="location.href='@Url.Action("Index", "Leaders")'">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h-4m-6 0H5" />
-                        <path d="M9 7h6M9 11h6" />
-                    </svg>
-                    Cán bộ
-                </button>
-
                 <!-- LeaderOrders -->
                 <button class="nav-item @(currentController == "LeaderOrders" ? "active" : "")"
                         onclick="location.href='@Url.Action("Index", "LeaderOrders")'">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                         <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
-                    Đặt cơm cán bộ
-                </button>
-
-                <!-- Meals -->
-                <button class="nav-item @(currentController == "Meals" ? "active" : "")"
-                        onclick="location.href='@Url.Action("Index", "Meals")'">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Đồ ăn
+                    Báo cơm cán bộ
                 </button>
 
                 <!-- MealOrders -->
                 <button class="nav-item @(currentController == "MealOrders" ? "active" : "")"
                         onclick="location.href='@Url.Action("Index", "MealOrders")'">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path d="M3 12h18M3 6h18M3 18h18" />
+                        <circle cx="12" cy="12" r="3" />
                     </svg>
-                    Đặt đồ ăn công nhân
+                    Báo cơm bộ phận
+                </button>
+
+                <!-- Leaders -->
+                <button class="nav-item @(currentController == "Leaders" ? "active" : "")"
+                        onclick="location.href='@Url.Action("Index", "Leaders")'">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                    </svg>
+                    Danh sách cán bộ
+                </button>
+
+                <!-- Departments -->
+                <button class="nav-item @(currentController == "Departments" ? "active" : "")"
+                        onclick="location.href='@Url.Action("Index", "Departments")'">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    Danh sách bộ phận
+                </button>
+
+                <!-- Meals -->
+                <button class="nav-item @(currentController == "Meals" ? "active" : "")"
+                        onclick="location.href='@Url.Action("Index", "Meals")'">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v8H2z" />
+                        <path d="M6 12h12" />
+                    </svg>
+                    Đồ ăn
+                </button>
+
+                <!-- Kitchens -->
+                <button class="nav-item @(currentController == "Kitchens" ? "active" : "")"
+                        onclick="location.href='@Url.Action("Index", "Kitchens")'">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2M12 12v6" />
+                        <circle cx="12" cy="5" r="3" />
+                    </svg>
+                    Danh sách nhà ăn
                 </button>
 
                 <!-- Users -->
                 <button class="nav-item @(currentController == "Users" ? "active" : "")"
                         onclick="location.href='@Url.Action("Index", "Users")'">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
                     </svg>
-                    Người dùng
+                    Danh sách tài khoản
                 </button>
 
                 <!-- UserDepartments -->
                 <button class="nav-item @(currentController == "UserDepartments" ? "active" : "")"
                         onclick="location.href='@Url.Action("Index", "UserDepartments")'">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
-                    Người dùng bộ phận
+                    Quản lý tài khoản bộ phận
                 </button>
-                
+
                 <!-- Settings -->
                 <button class="nav-item" data-section="settings">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

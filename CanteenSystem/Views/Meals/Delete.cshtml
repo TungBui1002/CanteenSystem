@@ -1,80 +1,41 @@
 ﻿@model CanteenSystem.Models.Meal
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Delete Meal";
 }
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Xác nhận xóa</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="text-danger">Bạn có chắc chắn muốn xóa món ăn này?</h5>
+                        <hr />
 
-<h2>Delete</h2>
+                        <dl class="row">
+                            <dt class="col-sm-3">Tên món</dt>
+                            <dd class="col-sm-9">@Html.DisplayFor(model => model.MealName)</dd>
+                            <dt class="col-sm-3">Giá</dt>
+                            <dd class="col-sm-9">@Html.DisplayFor(model => model.Price, "{0:#,##0} đ")</dd>
+                            <dt class="col-sm-3">Áp dụng cho</dt>
+                            <dd class="col-sm-9">@Html.DisplayFor(model => model.ApplicableFor)</dd>
+                        </dl>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Meal</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.MealName)
-        </dt>
+                        @using (Html.BeginForm())
+                        {
+                            @Html.AntiForgeryToken()
 
-        <dd>
-            @Html.DisplayFor(model => model.MealName)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.ApplicableFor)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ApplicableFor)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.UpdatedAt)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.UpdatedAt)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Creator)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Creator)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Modifier)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Modifier)
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
-        @Html.AntiForgeryToken()
-
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
+                            <div class="form-group mt-4">
+                                <input type="submit" value="Xác nhận xóa" class="btn btn-danger" />
+                                @Html.ActionLink("Hủy", "Index", null, new { @class = "btn btn-secondary ml-2" })
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
-    }
+    </div>
 </div>

@@ -1,5 +1,6 @@
 ﻿using CanteenSystem.Data;
 using CanteenSystem.Models;
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
@@ -39,19 +40,21 @@ namespace CanteenSystem.Controllers
         }
 
         // POST: Kitchens/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "KitchenId,KitchenName,CreatedAt,UpdatedAt,Creator,Modifier")] Kitchen kitchen)
+        public ActionResult Create([Bind(Include = "KitchenName")] Kitchen kitchen)
         {
             if (ModelState.IsValid)
             {
+                kitchen.CreatedAt = DateTime.Now;
+                kitchen.Creator = User.Identity.Name ?? "Admin";
+                kitchen.UpdatedAt = null;
+                kitchen.Modifier = null;
+
                 db.Kitchens.Add(kitchen);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-
             return View(kitchen);
         }
 
@@ -71,15 +74,20 @@ namespace CanteenSystem.Controllers
         }
 
         // POST: Kitchens/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "KitchenId,KitchenName,CreatedAt,UpdatedAt,Creator,Modifier")] Kitchen kitchen)
+        public ActionResult Edit([Bind(Include = "KitchenId,KitchenName")] Kitchen kitchen)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(kitchen).State = EntityState.Modified;
+                var existing = db.Kitchens.Find(kitchen.KitchenId);
+                if (existing == null) return HttpNotFound();
+
+                existing.KitchenName = kitchen.KitchenName;
+                existing.UpdatedAt = DateTime.Now;
+                existing.Modifier = User.Identity.Name ?? "Admin";
+
+                db.Entry(existing).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
