@@ -15,6 +15,12 @@ namespace CanteenSystem.Controllers
         // GET: Kitchens
         public ActionResult Index()
         {
+            string role = Session["Role"]?.ToString();
+            if (string.IsNullOrEmpty(role) || role != "Admin")
+            {
+                // Không phải Admin → redirect về Login
+                return RedirectToAction("Login", "Account");
+            }
             return View(db.Kitchens.ToList());
         }
 

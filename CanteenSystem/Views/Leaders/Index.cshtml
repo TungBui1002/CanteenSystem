@@ -57,6 +57,7 @@
                             <table class="table table-striped table-hover">
                                 <thead class="thead-dark">
                                     <tr>
+                                        <th>STT</th>
                                         <th>Mã cán bộ</th>
                                         <th>Họ tên</th>
                                         <th>Bộ phận</th>
@@ -66,9 +67,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @{
+                                        int stt = 1;
+                                    }
+
                                     @foreach (var item in Model)
                                     {
                                         <tr>
+                                            <td>@stt</td>
                                             <td>@Html.DisplayFor(modelItem => item.EmployeeId)</td>
                                             <td>@Html.DisplayFor(modelItem => item.FullName)</td>
                                             <td>@Html.DisplayFor(modelItem => item.Department.DepartmentCode) @*- @Html.DisplayFor(modelItem => item.Department.DepartmentName)*@</td>
@@ -83,6 +89,7 @@
                                                 </a>
                                             </td>
                                         </tr>
+                                        stt++;
                                     }
                                 </tbody>
                             </table>

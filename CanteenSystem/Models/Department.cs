@@ -13,14 +13,14 @@ namespace CanteenSystem.Models
         public int DepartmentId { get; set; }
 
         [Required]
-        [StringLength(20)]
+        [StringLength(30)]
         [Index(IsUnique = true)]
         [Column("department_code")]
         [Display(Name = "Mã bộ phận")]
         public string DepartmentCode { get; set; }
 
         [Required]
-        [StringLength(100)]
+        [StringLength(200)]
         [Column("department_name")]
         [Display(Name = "Tên bộ phận")]
         public string DepartmentName { get; set; }
