@@ -18,6 +18,13 @@ namespace CanteenSystem.Controllers
         // GET: Leaders (với tìm kiếm)
         public ActionResult Index(string searchString)
         {
+            string role = Session["Role"]?.ToString();
+            if (string.IsNullOrEmpty(role) || role != "Admin")
+            {
+                // Không phải Admin → redirect về Login
+                return RedirectToAction("Login", "Account");
+            }
+
             var leaders = db.Leaders.Include(l => l.Department);
 
             if (!string.IsNullOrEmpty(searchString))

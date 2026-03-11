@@ -14,6 +14,12 @@ namespace CanteenSystem.Controllers
         // GET: MealOrders
         public ActionResult Index()
         {
+            // Kiểm tra đăng nhập
+            if (!User.Identity.IsAuthenticated)
+            {
+                // Redirect về Login, giữ nguyên returnUrl để quay lại sau khi login
+                return RedirectToAction("Login", "Account", new { returnUrl = Request.Url.PathAndQuery });
+            }
             var mealOrders = db.MealOrders.Include(m => m.Department).Include(m => m.Kitchen).Include(m => m.Meal);
             return View(mealOrders.ToList());
         }

@@ -18,6 +18,13 @@ namespace CanteenSystem.Controllers
         // GET: Departments
         public ActionResult Index(string searchString)
         {
+            string role = Session["Role"]?.ToString();
+            if (string.IsNullOrEmpty(role) || role != "Admin")
+            {
+                // Không phải Admin → redirect về Login
+                return RedirectToAction("Login", "Account");
+            }
+
             var departments = from d in db.Departments
                               select d;
 

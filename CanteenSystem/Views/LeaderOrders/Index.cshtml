@@ -15,6 +15,9 @@
             @Html.DisplayNameFor(model => model.Leader.CostCenter)
         </th>
         <th>
+            @Html.DisplayNameFor(model => model.Leader.EmployeeId)
+        </th>
+        <th>
             @Html.DisplayNameFor(model => model.Meal.MealName)
         </th>
         <th>
@@ -32,12 +35,6 @@
         <th>
             @Html.DisplayNameFor(model => model.UpdatedAt)
         </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Creator)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Modifier)
-        </th>
         <th></th>
     </tr>
 
@@ -47,6 +44,8 @@
             @Html.DisplayFor(modelItem => item.Leader.CostCenter)
         </td>
         <td>
+            @Html.DisplayFor(modelItem => item.Leader.EmployeeId)
+<td>
             @Html.DisplayFor(modelItem => item.Meal.MealName)
         </td>
         <td>
@@ -63,12 +62,6 @@
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.UpdatedAt)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Creator)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Modifier)
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.OrderId }) |
