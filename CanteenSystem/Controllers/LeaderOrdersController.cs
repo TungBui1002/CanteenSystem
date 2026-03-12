@@ -194,38 +194,74 @@ namespace CanteenSystem.Controllers
         }
 
         // GET: LeaderOrders/Edit/5
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int? id, string employeeId, DateTime date)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(employeeId))
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            LeaderOrder leaderOrder = db.LeaderOrders.Find(id);
-            if (leaderOrder == null)
+
+            LeaderOrder order = null;
+            if (id.HasValue)
             {
-                return HttpNotFound();
+                order = db.LeaderOrders.Find(id.Value);
             }
-            ViewBag.EmployeeId = new SelectList(db.Leaders, "EmployeeId", "CostCenter", leaderOrder.EmployeeId);
-            ViewBag.MealId = new SelectList(db.Meals, "MealId", "MealName", leaderOrder.MealId);
-            return View(leaderOrder);
+
+            // Nếu không tìm thấy record → tạo mới cho cán bộ này
+            if (order == null)
+            {
+                var leader = db.Leaders.FirstOrDefault(l => l.EmployeeId == employeeId);
+                if (leader == null) return HttpNotFound();
+
+                order = new LeaderOrder
+                {
+                    EmployeeId = employeeId,
+                    Date = date,
+                    Status = "Chưa đặt",
+                    Price = 30000
+                };
+            }
+
+            var meals = db.Meals.Where(m => m.ApplicableFor == "Leader").ToList();
+            ViewBag.Meals = new SelectList(meals, "MealId", "MealName", order.MealId);
+            ViewBag.Date = date;
+            ViewBag.EmployeeName = db.Leaders.FirstOrDefault(l => l.EmployeeId == employeeId)?.FullName ?? "Unknown";
+
+            return View(order);
         }
 
         // POST: LeaderOrders/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "OrderId,EmployeeId,Date,MealId,Status,Price,CreatedAt,UpdatedAt,Creator,Modifier")] LeaderOrder leaderOrder)
+        public ActionResult Edit([Bind(Include = "OrderId,EmployeeId,Date,MealId,Status,Price,CreatedAt,Creator,UpdatedAt,Modifier")] LeaderOrder order)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(leaderOrder).State = EntityState.Modified;
+                if (order.OrderId > 0)
+                {
+                    // Update
+                    db.Entry(order).State = EntityState.Modified;
+                    order.UpdatedAt = DateTime.Now;
+                    order.Modifier = User.Identity.Name ?? "Admin";
+                }
+                else
+                {
+                    // Create mới
+                    order.CreatedAt = DateTime.Now;
+                    order.Creator = User.Identity.Name ?? "Admin";
+                    db.LeaderOrders.Add(order);
+                }
+
                 db.SaveChanges();
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", new { date = order.Date });
             }
-            ViewBag.EmployeeId = new SelectList(db.Leaders, "EmployeeId", "CostCenter", leaderOrder.EmployeeId);
-            ViewBag.MealId = new SelectList(db.Meals, "MealId", "MealName", leaderOrder.MealId);
-            return View(leaderOrder);
+
+            var meals = db.Meals.Where(m => m.ApplicableFor == "Leader").ToList();
+            ViewBag.Meals = new SelectList(meals, "MealId", "MealName", order.MealId);
+            ViewBag.Date = order.Date;
+            ViewBag.EmployeeName = db.Leaders.FirstOrDefault(l => l.EmployeeId == order.EmployeeId)?.FullName ?? "Unknown";
+
+            return View(order);
         }
 
         // GET: LeaderOrders/Delete/5

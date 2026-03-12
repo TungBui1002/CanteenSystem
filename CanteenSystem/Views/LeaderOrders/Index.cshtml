@@ -45,7 +45,8 @@
                                 <th>Bộ phận</th>
                                 <th>Món ăn</th>
                                 <th>Trạng thái</th>
-                                <th>Người tạo</th>
+                                @*<th>Người tạo</th>*@
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -70,7 +71,17 @@
                                             @item.Status
                                         </span>
                                     </td>
-                                    <td>@item.Creator</td>
+                                    @*<td>@item.Creator</td>*@
+                                    <td>
+                                        @if (item.OrderId.HasValue)
+                                        {
+                                            @Html.ActionLink("Sửa", "Edit", new { id = item.OrderId, employeeId = item.EmployeeId, date = item.Date.ToString("yyyy-MM-dd") }, new { @class = "btn btn-sm btn-warning" })
+                                        }
+                                        else
+                                        {
+                                            @Html.ActionLink("Đặt cơm", "Edit", new { employeeId = item.EmployeeId, date = item.Date.ToString("yyyy-MM-dd") }, new { @class = "btn btn-sm btn-success" })
+                                        }
+                                    </td>
                                 </tr>
                                 stt++;
                             }
