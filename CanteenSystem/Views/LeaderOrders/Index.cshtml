@@ -1,74 +1,88 @@
-﻿@model IEnumerable<CanteenSystem.Models.LeaderOrder>
+﻿@model IEnumerable<CanteenSystem.Models.ViewModel.LeaderOrderViewModel>
 
 @{
-    ViewBag.Title = "Leader Order";
+    ViewBag.Title = "Danh sách báo cơm cán bộ";
+    var selectedDate = (DateTime)ViewBag.SelectedDate;
 }
 
-<h2>Báo cơm Cán bộ hàng ngày</h2>
+<div class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-list"></i> Báo cơm cán bộ - @selectedDate.ToString("dd/MM/yyyy")</h4>
+            </div>
+            <div class="card-body">
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Leader.CostCenter)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Leader.EmployeeId)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Meal.MealName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Date)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Status)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Price)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.UpdatedAt)
-        </th>
-        <th></th>
-    </tr>
+                <!-- Lọc ngày + nút Create -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-group">
+                        <label>Chọn ngày để xem:</label>
+                        @Html.DropDownList("date", ViewBag.Dates as IEnumerable<SelectListItem>, new { @class = "form-control", onchange = "location.href='/LeaderOrders/Index?date=' + this.value" })
+                    </div>
+                    <a href="@Url.Action("Create")" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Báo cơm mới
+                    </a>
+                </div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Leader.CostCenter)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Leader.EmployeeId)
-<td>
-            @Html.DisplayFor(modelItem => item.Meal.MealName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Date)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Status)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Price)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.CreatedAt)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UpdatedAt)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.OrderId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.OrderId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.OrderId })
-        </td>
-    </tr>
-}
+                <!-- Thông báo ngày hôm nay chưa đặt -->
+                @if (ViewBag.NoOrderToday != null)
+                {
+                    <div class="alert alert-warning text-center">
+                        <h5>Hôm nay (@selectedDate.ToString("dd/MM/yyyy")) <strong>chưa đặt cơm cán bộ</strong>.</h5>
+                        <p>Bấm nút "Báo cơm mới" để bắt đầu báo cơm cho ngày hôm nay.</p>
+                    </div>
+                }
 
-</table>
+                <!-- Bảng dữ liệu -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>STT</th>
+                                <th>TT Chi phí</th>
+                                <th>Mã cán bộ</th>
+                                <th>Họ tên</th>
+                                <th>Bộ phận</th>
+                                <th>Món ăn</th>
+                                <th>Trạng thái</th>
+                                <th>Người tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int stt = 1;
+                            }
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@stt</td>
+                                    <td>@item.CostCenter</td>
+                                    <td>@item.EmployeeId</td>
+                                    <td>@item.FullName</td>
+                                    <td>@item.DepartmentName</td>
+                                    <td>
+                                        <span class="badge @(item.MealName == "Cơm chay" ? "badge-success" : "badge-warning")">
+                                            @item.MealName
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @(item.Status == "Đặt" ? "badge-info" : "badge-danger")">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td>@item.Creator</td>
+                                </tr>
+                                stt++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (!Model.Any() && ViewBag.NoOrderToday == null)
+                {
+                    <div class="alert alert-info">Chưa có báo cơm cho ngày này.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

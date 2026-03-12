@@ -1,6 +1,8 @@
 ﻿using CanteenSystem.Data;
 using CanteenSystem.Models;
+using CanteenSystem.Models.ViewModel;
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
@@ -22,49 +24,140 @@ namespace CanteenSystem.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            DateTime selectedDate = date ?? DateTime.Today;
+            DateTime selectedDate = date ?? DateTime.Today.Date;
+            bool isToday = selectedDate.Date == DateTime.Today.Date;
 
             var orders = db.LeaderOrders
                 .Include(o => o.Leader)
                 .Include(o => o.Meal)
-                .Where(o => o.Date == selectedDate)
+                .Where(o => DbFunctions.TruncateTime(o.Date) == selectedDate.Date)
+                .OrderBy(o => o.Leader.EmployeeId)
                 .ToList();
 
+            var allLeaders = db.Leaders.Include(l => l.Department).OrderBy(l => l.EmployeeId).ToList();
+
+            var viewModel = allLeaders.Select(l =>
+            {
+                var order = orders.FirstOrDefault(o => o.EmployeeId == l.EmployeeId);
+                return new LeaderOrderViewModel
+                {
+                    OrderId = order?.OrderId,
+                    CostCenter = l.CostCenter,
+                    EmployeeId = l.EmployeeId,
+                    FullName = l.FullName,
+                    DepartmentName = l.Department?.DepartmentName ?? "Chưa gán",
+                    MealName = order?.Meal?.MealName ?? ".",
+                    Status = order?.Status ?? "Chưa đặt",
+                    Price = order?.Price ?? 30000M,
+                    Date = selectedDate,
+                    Creator = order?.Creator
+                };
+            }).ToList();
+
             ViewBag.SelectedDate = selectedDate;
-            return View(orders);
+            var dates = db.LeaderOrders
+                .Select(o => DbFunctions.TruncateTime(o.Date))
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToList()
+                .Where(d => d.HasValue)
+                .Select(d => new SelectListItem
+                {
+                    Value = d.Value.ToString("yyyy-MM-dd"),
+                    Text = d.Value.ToString("dd/MM/yyyy")
+                })
+                .ToList();
+
+            // Thêm ngày hiện tại nếu chưa có (để luôn có ngày mặc định)
+            if (!dates.Any(d => d.Value == selectedDate.ToString("yyyy-MM-dd")))
+            {
+                dates.Insert(0, new SelectListItem
+                {
+                    Value = selectedDate.ToString("yyyy-MM-dd"),
+                    Text = selectedDate.ToString("dd/MM/yyyy"),
+                    Selected = true
+                });
+            }
+
+            ViewBag.Dates = dates;
+
+            // Thêm ngày hiện tại nếu chưa có trong list
+            var datesList = ViewBag.Dates as List<SelectListItem>;
+            if (datesList != null && !datesList.Any(d => d.Value == selectedDate.ToString("yyyy-MM-dd")))
+            {
+                datesList.Insert(0, new SelectListItem
+                {
+                    Value = selectedDate.ToString("yyyy-MM-dd"),
+                    Text = selectedDate.ToString("dd/MM/yyyy"),
+                    Selected = true
+                });
+            }
+
+            // Nếu là ngày hôm nay và chưa có record nào → hiện thông báo thân thiện
+            if (isToday && !orders.Any())
+            {
+                ViewBag.NoOrderToday = true;
+            }
+
+            return View(viewModel);
         }
 
-        // GET: LeaderOrders/Create (batch edit theo ngày)
-        public ActionResult Create(DateTime? date)
+        // GET: LeaderOrders/Create (báo cơm ngày hôm nay)
+        public ActionResult Create()
         {
-            DateTime selectedDate = date ?? DateTime.Today;
+            string role = Session["Role"]?.ToString();
+            if (string.IsNullOrEmpty(role) || role != "Admin")
+            {
+                // Không phải Admin → redirect về Login
+                return RedirectToAction("Login", "Account");
+            }
 
-            // Lấy tất cả cán bộ
-            var leaders = db.Leaders.Include(l => l.Department).ToList();
+            DateTime today = DateTime.Today.Date;
 
-            // Lấy danh sách món áp dụng cho cán bộ
+            // Khóa nếu ngày hôm nay đã có record
+            if (db.LeaderOrders.Any(o => DbFunctions.TruncateTime(o.Date) == today))
+            {
+                return RedirectToAction("Index", new { date = today });
+            }
+
+            var leaders = db.Leaders
+             .Include(l => l.Department)
+             .OrderBy(l => l.EmployeeId)
+             .ToList();
+
             var meals = db.Meals.Where(m => m.ApplicableFor == "Leader").ToList();
 
-            ViewBag.SelectedDate = selectedDate;
-            ViewBag.Meals = new SelectList(meals, "MealId", "MealName");
+            ViewBag.SelectedDate = today;
+            ViewBag.Meals = meals;
 
             return View(leaders);
         }
 
-        // POST: LeaderOrders/Create (lưu batch)
+        // POST: LeaderOrders/Create (lưu batch toàn bộ cán bộ)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(DateTime selectedDate, int[] mealIds, string[] statuses)
         {
+            if (db.LeaderOrders.Any(o => DbFunctions.TruncateTime(o.Date) == selectedDate.Date))
+            {
+                return RedirectToAction("Index", new { date = selectedDate });
+            }
+
             var leaders = db.Leaders.ToList();
+            int savedCount = 0;
+
+            if (mealIds.Length != leaders.Count || statuses.Length != leaders.Count)
+            {
+                return RedirectToAction("Create");
+            }
 
             for (int i = 0; i < leaders.Count; i++)
             {
                 int mealId = mealIds[i];
                 string status = statuses[i];
 
-                // Nếu chọn "Chưa đặt" thì bỏ qua
-                if (status == "Chưa đặt") continue;
+                var meal = db.Meals.Find(mealId);
+                if (meal == null) continue;
 
                 var order = new LeaderOrder
                 {
@@ -72,16 +165,16 @@ namespace CanteenSystem.Controllers
                     Date = selectedDate,
                     MealId = mealId,
                     Status = status,
-                    Price = 30000,          
+                    Price = meal.Price, // Lấy giá thực từ món ăn
                     CreatedAt = DateTime.Now,
                     Creator = User.Identity.Name ?? "Admin"
                 };
 
                 db.LeaderOrders.Add(order);
+                savedCount++;
             }
 
             db.SaveChanges();
-            TempData["Success"] = $"Đã lưu báo cơm cán bộ ngày {selectedDate:dd/MM/yyyy}";
             return RedirectToAction("Index", new { date = selectedDate });
         }
 

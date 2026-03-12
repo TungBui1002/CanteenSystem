@@ -260,6 +260,7 @@
     <Compile Include="Models\MealOrder.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserDepartment.cs" />
+    <Compile Include="Models\ViewModel\LeaderOrderViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
