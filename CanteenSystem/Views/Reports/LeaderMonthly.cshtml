@@ -1,0 +1,85 @@
+﻿@model IEnumerable<CanteenSystem.Models.ViewModel.LeaderMonthlyReportViewModel>
+
+@{
+    ViewBag.Title = "Báo cáo tháng cán bộ";
+    var fromDate = (DateTime)ViewBag.FromDate;
+    var toDate = (DateTime)ViewBag.ToDate;
+}
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-chart-bar"></i> Báo cáo tháng cán bộ</h4>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("LeaderMonthly", "Reports", FormMethod.Post))
+                {
+                    <div class="form-row mb-4">
+                        <div class="col-md-4">
+                            <label>Từ ngày</label>
+                            <input type="date" name="fromDate" value="@fromDate.ToString("yyyy-MM-dd")" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label>Đến ngày</label>
+                            <input type="date" name="toDate" value="@toDate.ToString("yyyy-MM-dd")" class="form-control" />
+                        </div>
+                        <div class="col-md-4 align-self-end">
+                            <button type="submit" name="submitType" value="view" class="btn btn-primary">Xem báo cáo</button>
+                            <button type="submit" name="submitType" value="export" class="btn btn-success ml-2">
+                                <i class="fas fa-file-excel"></i> Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>STT</th>
+                                <th>TT Chi phí</th>
+                                <th>Mã cán bộ</th>
+                                <th>Họ tên</th>
+                                <th>Bộ phận</th>
+                                <th>Cơm mặn (phần)</th>
+                                <th>Cơm chay (phần)</th>
+                                <th>Tổng phần</th>
+                                <th>Tổng tiền (VNĐ)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int stt = 1;
+                            }
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@stt</td>
+                                    <td>@item.CostCenter</td>
+                                    <td>@item.EmployeeId</td>
+                                    <td>@item.FullName</td>
+                                    <td>@item.DepartmentName</td>
+                                    <td>@item.ManCount</td>
+                                    <td>@item.ChayCount</td>
+                                    <td>@item.TotalPortions</td>
+                                    <td>@item.TotalCost.ToString("N0")</td>
+                                </tr>
+                                stt++;
+                            }
+                        </tbody>
+                        <tfoot class="table-active">
+                            <tr>
+                                <td colspan="5"><strong>Tổng cộng</strong></td>
+                                <td>@ViewBag.TotalMan</td>
+                                <td>@ViewBag.TotalChay</td>
+                                <td>@ViewBag.GrandTotalPortions</td>
+                                <td>@ViewBag.GrandTotalCost.ToString("N0")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

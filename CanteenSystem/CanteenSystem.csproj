@@ -245,6 +245,7 @@
     <Compile Include="Controllers\LeadersController.cs" />
     <Compile Include="Controllers\MealOrdersController.cs" />
     <Compile Include="Controllers\MealsController.cs" />
+    <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\UserDepartmentsController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Data\CanteenDbContext.cs" />
@@ -260,6 +261,7 @@
     <Compile Include="Models\MealOrder.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserDepartment.cs" />
+    <Compile Include="Models\ViewModel\LeaderMonthlyReportViewModel.cs" />
     <Compile Include="Models\ViewModel\LeaderOrderViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -357,6 +359,8 @@
     <Content Include="Views\Leaders\Import.cshtml" />
     <Content Include="Views\Users\ResetPassword.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
+    <Content Include="Views\Reports\Index.cshtml" />
+    <Content Include="Views\Reports\LeaderMonthly.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
