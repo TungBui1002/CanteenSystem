@@ -1,8 +1,9 @@
 ﻿using CanteenSystem.Data;
 using CanteenSystem.Models;
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Net;
 using System.Web.Mvc;
 
 namespace CanteenSystem.Controllers
@@ -17,126 +18,145 @@ namespace CanteenSystem.Controllers
             // Kiểm tra đăng nhập
             if (!User.Identity.IsAuthenticated)
             {
-                // Redirect về Login, giữ nguyên returnUrl để quay lại sau khi login
                 return RedirectToAction("Login", "Account", new { returnUrl = Request.Url.PathAndQuery });
             }
             var mealOrders = db.MealOrders.Include(m => m.Department).Include(m => m.Kitchen).Include(m => m.Meal);
             return View(mealOrders.ToList());
         }
 
-        // GET: MealOrders/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            MealOrder mealOrder = db.MealOrders.Find(id);
-            if (mealOrder == null)
-            {
-                return HttpNotFound();
-            }
-            return View(mealOrder);
-        }
-
         // GET: MealOrders/Create
         public ActionResult Create()
         {
-            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentCode");
-            ViewBag.KitchenId = new SelectList(db.Kitchens, "KitchenId", "KitchenName");
-            ViewBag.MealId = new SelectList(db.Meals, "MealId", "MealName");
-            return View();
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var departments = GetAccessibleDepartments();
+            var meals = db.Meals.Where(m => m.ApplicableFor == "Department").ToList();
+            var kitchens = db.Kitchens.ToList();
+
+            ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode");
+            ViewBag.MealId = new SelectList(meals, "MealId", "MealName");
+            ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName");
+            ViewBag.Shift = new SelectList(new[] {"Day", "Overtime", "Night" });
+            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" });
+            ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" });
+            ViewBag.SelectedDate = DateTime.Today.Date;
+
+            return View(new MealOrder
+            {
+                Date = DateTime.Today
+            });
         }
 
         // POST: MealOrders/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "OrderId,DepartmentId,Date,Shift,Time,MealId,PersonnelType,Quantity,Price,KitchenId,CreatedAt,UpdatedAt,Creator,Modifier")] MealOrder mealOrder)
+        public ActionResult Create([Bind(Include = "DepartmentId,Date,Shift,Time,MealId,KitchenId,PersonnelType,Quantity,Price,CreatedAt,Creator")] MealOrder mealOrder)
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var departments = GetAccessibleDepartments();
+
+            // Kiểm tra quyền bộ phận
+            var role = Session["Role"]?.ToString();
+
+            if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)
+                && !departments.Any(d => d.DepartmentId == mealOrder.DepartmentId))
+            {
+                ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
+                ViewBag.MealId = new SelectList(db.Meals.Where(m => m.ApplicableFor == "Department"), "MealId", "MealName", mealOrder.MealId);
+                ViewBag.KitchenId = new SelectList(db.Kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
+                ViewBag.Shift = new SelectList(new[] { "Day", "Overtime", "Night" });
+                ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
+                ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" }, mealOrder.Time);
+                ViewBag.SelectedDate = mealOrder.Date;
+                return View(mealOrder);
+            }
+
             if (ModelState.IsValid)
             {
+                mealOrder.CreatedAt = DateTime.Now;
+                mealOrder.Creator = User.Identity.Name ?? "Admin";
+
+                var meal = db.Meals.Find(mealOrder.MealId);
+                if (meal != null)
+                {
+                    mealOrder.Price = meal.Price * mealOrder.Quantity;
+                }
+
                 db.MealOrders.Add(mealOrder);
                 db.SaveChanges();
-                return RedirectToAction("Index");
+                return RedirectToAction("History", new { date = mealOrder.Date });
             }
 
-            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
+            ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
+            ViewBag.MealId = new SelectList(db.Meals.Where(m => m.ApplicableFor == "Department"), "MealId", "MealName", mealOrder.MealId);
             ViewBag.KitchenId = new SelectList(db.Kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-            ViewBag.MealId = new SelectList(db.Meals, "MealId", "MealName", mealOrder.MealId);
+            ViewBag.Shift = new SelectList(new[] { "Day", "Overtime", "Night" }, mealOrder.Shift);
+            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
+            ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00","20:00", "01:30" }, mealOrder.Time);
+            ViewBag.SelectedDate = mealOrder.Date;
             return View(mealOrder);
         }
 
-        // GET: MealOrders/Edit/5
-        public ActionResult Edit(int? id)
+        // GET: MealOrders/History (xem lịch sử theo ngày)
+        public ActionResult History(DateTime? date)
         {
-            if (id == null)
+            if (!User.Identity.IsAuthenticated)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return RedirectToAction("Login", "Account");
             }
-            MealOrder mealOrder = db.MealOrders.Find(id);
-            if (mealOrder == null)
+
+            DateTime selectedDate = date ?? DateTime.Today.Date;
+
+            string role = Session["Role"]?.ToString();
+            var accessibleDepts = GetAccessibleDepartments();
+
+            var query = db.MealOrders
+                .Include(m => m.Department)
+                .Include(m => m.Meal)
+                .Include(m => m.Kitchen)
+                .Where(m => DbFunctions.TruncateTime(m.Date) == selectedDate.Date);
+
+            if (!role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
             {
-                return HttpNotFound();
+                var deptIds = accessibleDepts.Select(d => d.DepartmentId);
+                query = query.Where(m => deptIds.Contains(m.DepartmentId));
             }
-            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
-            ViewBag.KitchenId = new SelectList(db.Kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-            ViewBag.MealId = new SelectList(db.Meals, "MealId", "MealName", mealOrder.MealId);
-            return View(mealOrder);
+
+            var orders = query.OrderBy(m => m.Department.DepartmentCode).ToList();
+
+            ViewBag.SelectedDate = selectedDate;
+            return View(orders);
         }
 
-        // POST: MealOrders/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "OrderId,DepartmentId,Date,Shift,Time,MealId,PersonnelType,Quantity,Price,KitchenId,CreatedAt,UpdatedAt,Creator,Modifier")] MealOrder mealOrder)
+        private List<Department> GetAccessibleDepartments()
         {
-            if (ModelState.IsValid)
-            {
-                db.Entry(mealOrder).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
-            ViewBag.KitchenId = new SelectList(db.Kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-            ViewBag.MealId = new SelectList(db.Meals, "MealId", "MealName", mealOrder.MealId);
-            return View(mealOrder);
-        }
+            string username = User.Identity.Name;
+            if (string.IsNullOrEmpty(username)) return new List<Department>();
 
-        // GET: MealOrders/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            MealOrder mealOrder = db.MealOrders.Find(id);
-            if (mealOrder == null)
-            {
-                return HttpNotFound();
-            }
-            return View(mealOrder);
-        }
+            var user = db.Users.FirstOrDefault(u => u.Username == username);
+            if (user == null) return new List<Department>();
 
-        // POST: MealOrders/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            MealOrder mealOrder = db.MealOrders.Find(id);
-            db.MealOrders.Remove(mealOrder);
-            db.SaveChanges();
-            return RedirectToAction("Index");
+            if (user.Role == "Admin")
+            {
+                return db.Departments.ToList();
+            }
+
+            return db.UserDepartments
+                .Where(ud => ud.UserId == user.UserId)
+                .Select(ud => ud.Department)
+                .ToList();
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
+            if (disposing) db.Dispose();
             base.Dispose(disposing);
         }
     }
