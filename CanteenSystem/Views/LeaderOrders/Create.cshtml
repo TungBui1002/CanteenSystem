@@ -5,6 +5,27 @@
     var meals = (IEnumerable<CanteenSystem.Models.Meal>)ViewBag.Meals;
 }
 
+<header>
+    <style>
+        .meal-select {
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+            .meal-select.chay {
+                background-color: #d4edda !important; /* xanh nhạt cho chay */
+                color: #155724 !important;
+                border-color: #c3e6cb !important;
+            }
+
+            .meal-select.man {
+                background-color: #fff3cd !important; /* vàng nhạt cho mặn */
+                color: #856404 !important;
+                border-color: #ffeeba !important;
+            }
+    </style>
+</header>
+
 <div class="content">
     <div class="container-fluid">
         <div class="card">
@@ -42,7 +63,11 @@
                                         <td>@leader.FullName</td>
                                         <td>@(leader.Department?.DepartmentName ?? "Chưa gán")</td>
                                         <td>
-                                            @Html.DropDownList("mealIds[" + i + "]", new SelectList(meals, "MealId", "MealName"), "-- Chọn món --", new { @class = "form-control" })
+                                            @Html.DropDownList("mealIds[" + i + "]", new SelectList(meals, "MealId", "MealName"), "-- Chọn món --", new
+                                            {
+                                                @class = "form-control meal-select",
+                                                data_meal_name = ""
+                                            })
                                         </td>
                                         <td>
                                             <select name="statuses[@i]" class="form-control">
@@ -70,4 +95,26 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function () {
+            $('.meal-select').on('change', function () {
+                var selectedText = $(this).find("option:selected").text().trim().toLowerCase();
+                var $select = $(this);
+
+                // Xóa class cũ
+                $select.removeClass('chay man');
+
+                // Kiểm tra tên món (bỏ dấu, không phân biệt hoa thường)
+                if (selectedText.includes("chay") || selectedText.includes("cơm chay")) {
+                    $select.addClass('chay');
+                } else if (selectedText.includes("mặn") || selectedText.includes("cơm mặn")) {
+                    $select.addClass('man');
+                }
+            });
+
+            // Trigger lần đầu nếu đã có giá trị (khi edit)
+            $('.meal-select').trigger('change');
+        });
+    </script>
 }
