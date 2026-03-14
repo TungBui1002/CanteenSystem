@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
 using System.Web.Mvc;
 
 namespace CanteenSystem.Controllers
@@ -190,6 +191,135 @@ namespace CanteenSystem.Controllers
                 .Where(ud => ud.UserId == user.UserId)
                 .Select(ud => ud.Department)
                 .ToList();
+        }
+
+        // GET: MealOrders/Edit/5
+        public ActionResult Edit(int? id)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (Session["Role"]?.ToString() != "Admin")
+            {
+                TempData["Error"] = "Chỉ Admin mới có quyền sửa báo cơm!";
+                return RedirectToAction("History");
+            }
+
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            MealOrder mealOrder = db.MealOrders.Find(id);
+            if (mealOrder == null)
+            {
+                return HttpNotFound();
+            }
+
+            var departments = GetAccessibleDepartments();
+            var meals = db.Meals.Where(m => m.ApplicableFor == "Department").ToList();
+            var kitchens = db.Kitchens.ToList();
+
+            ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
+            ViewBag.MealId = new SelectList(meals, "MealId", "MealName", mealOrder.MealId);
+            ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
+            ViewBag.Shift = new SelectList(new[] { "Day", "Overtime", "Night" }, mealOrder.Shift);
+            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
+            ViewBag.TimeOptions = new Dictionary<string, List<string>>
+            {
+                { "Day", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
+                { "Overtime", new List<string> { "16:30", "17:00", "20:00" } },
+                { "Night", new List<string> { "01:30" } }
+            };
+
+            return View(mealOrder);
+        }
+
+        // POST: MealOrders/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit([Bind(Include = "OrderId,DepartmentId,Date,Shift,Time,MealId,KitchenId,PersonnelType,Quantity,Price,CreatedAt,Creator,UpdatedAt,Modifier")] MealOrder mealOrder)
+        {
+            if (!User.Identity.IsAuthenticated || Session["Role"]?.ToString() != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (ModelState.IsValid)
+            {
+                mealOrder.UpdatedAt = DateTime.Now;
+                mealOrder.Modifier = User.Identity.Name ?? "Admin";
+
+                // Tính lại giá
+                var meal = db.Meals.Find(mealOrder.MealId);
+                if (meal != null)
+                {
+                    mealOrder.Price = meal.Price * mealOrder.Quantity;
+                }
+
+                db.Entry(mealOrder).State = EntityState.Modified;
+                db.SaveChanges();
+
+                return RedirectToAction("History", new { date = mealOrder.Date });
+            }
+
+            // Load lại dropdown nếu lỗi
+            var departments = GetAccessibleDepartments();
+            var meals = db.Meals.Where(m => m.ApplicableFor == "Department").ToList();
+            var kitchens = db.Kitchens.ToList();
+
+            ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
+            ViewBag.MealId = new SelectList(meals, "MealId", "MealName", mealOrder.MealId);
+            ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
+            ViewBag.Shift = new SelectList(new[] { "Day", "Overtime", "Night" }, mealOrder.Shift);
+            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
+            ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" }, mealOrder.Time);
+
+            return View(mealOrder);
+        }
+
+        // GET: MealOrders/Delete/5
+        public ActionResult Delete(int? id, DateTime? date)
+        {
+            if (!User.Identity.IsAuthenticated || Session["Role"]?.ToString() != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            MealOrder mealOrder = db.MealOrders.Find(id);
+            if (mealOrder == null)
+            {
+                return HttpNotFound();
+            }
+
+            return View(mealOrder);
+        }
+
+        // POST: MealOrders/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteConfirmed(int id, DateTime? date)
+        {
+            if (!User.Identity.IsAuthenticated || Session["Role"]?.ToString() != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            MealOrder mealOrder = db.MealOrders.Find(id);
+            if (mealOrder != null)
+            {
+                db.MealOrders.Remove(mealOrder);
+                db.SaveChanges();
+            }
+
+            return RedirectToAction("History", new { date = date ?? DateTime.Today.Date });
         }
 
         protected override void Dispose(bool disposing)

@@ -3,6 +3,7 @@
 @{
     ViewBag.Title = "Lịch sử báo cơm bộ phận - " + ViewBag.SelectedDate.ToString("dd/MM/yyyy");
     var selectedDate = (DateTime)ViewBag.SelectedDate;
+    bool isAdmin = Session["Role"]?.ToString() == "Admin";
 }
 <div class="content">
     <div class="container-fluid">
@@ -34,6 +35,10 @@
                                 <th>Loại nhân sự</th>
                                 <th>Tổng tiền</th>
                                 <th>Người tạo</th>
+                                @if (isAdmin)
+                                {
+                                    <th>Thao tác</th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
@@ -49,6 +54,17 @@
                                     <td>@item.PersonnelType</td>
                                     <td>@item.Price.ToString("N0")</td>
                                     <td>@item.Creator</td>
+                                    @if (isAdmin)
+                                    {
+                                        <td>
+                                            <a href="@Url.Action("Edit", new { id = item.OrderId })" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i> Sửa
+                                            </a>
+                                            <a href="@Url.Action("Delete", new { id = item.OrderId, date = item.Date })" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i> Xóa
+                                            </a>
+                                        </td>
+                                    }
                                 </tr>
                             }
                         </tbody>
