@@ -2,15 +2,25 @@
 
 @{
     ViewBag.Title = "Lịch sử báo cơm bộ phận - " + ViewBag.SelectedDate.ToString("dd/MM/yyyy");
+    var selectedDate = (DateTime)ViewBag.SelectedDate;
 }
-
 <div class="content">
     <div class="container-fluid">
         <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4><i class="fas fa-history"></i> Lịch sử báo cơm bộ phận - @ViewBag.SelectedDate.ToString("dd/MM/yyyy")</h4>
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-history"></i> Lịch sử báo cơm bộ phận</h4>
+                
             </div>
             <div class="card-body">
+                <!-- Dropdown chọn ngày -->
+                <div class="mb-3">
+                    <input type="text"
+                           id="datePicker"
+                           class="form-control"
+                           value="@ViewBag.SelectedDate.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <!-- Bảng dữ liệu -->
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover">
                         <thead class="thead-dark">
@@ -30,11 +40,11 @@
                             @foreach (var item in Model)
                             {
                                 <tr>
-                                    <td>@item.Department.DepartmentName</td>
+                                    <td>@(item.Department?.DepartmentName)</td>
                                     <td>@item.Date.ToString("dd/MM/yyyy")</td>
                                     <td>@item.Shift</td>
-                                    <td>@item.Meal.MealName</td>
-                                    <td>@item.Kitchen.KitchenName</td>
+                                    <td>@(item.Meal?.MealName)</td>
+                                    <td>@(item.Kitchen?.KitchenName)</td>
                                     <td>@item.Quantity</td>
                                     <td>@item.PersonnelType</td>
                                     <td>@item.Price.ToString("N0")</td>
@@ -44,11 +54,39 @@
                         </tbody>
                     </table>
                 </div>
+                <a href="@Url.Action("Create")" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Báo cơm mới
+                </a>
 
-                <div class="text-center mt-4">
-                    <a href="@Url.Action("Create")" class="btn btn-success">Báo cơm mới</a>
-                </div>
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-info text-center">
+                        Chưa có báo cơm nào cho ngày @selectedDate.ToString("dd/MM/yyyy").
+                    </div>
+                }
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+
+    flatpickr("#datePicker", {
+
+        dateFormat: "Y-m-d",
+
+        defaultDate: "@ViewBag.SelectedDate.ToString("yyyy-MM-dd")",
+
+        onChange: function(selectedDates, dateStr) {
+
+            window.location.href = '/MealOrders/History?date=' + dateStr;
+
+        }
+
+    });
+
+    </script>
+}

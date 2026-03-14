@@ -41,14 +41,22 @@ namespace CanteenSystem.Controllers
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName");
             ViewBag.Shift = new SelectList(new[] {"Day", "Overtime", "Night" });
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" });
-            ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" });
             ViewBag.SelectedDate = DateTime.Today.Date;
-
-            return View(new MealOrder
+            // Default Time cho từng ca (dùng JS để lọc)
+            ViewBag.TimeOptions = new Dictionary<string, List<string>>
             {
-                Date = DateTime.Today,
+                { "Day", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
+                { "Overtime", new List<string> { "16:30", "17:00", "20:00" } },
+                { "Night", new List<string> { "01:30" } }
+            };
+
+            var model = new MealOrder
+            {
+                Date = DateTime.Today.Date,
                 Quantity = 1
-            });
+            };
+
+            return View(model);
         }
 
         // POST: MealOrders/Create
@@ -105,7 +113,7 @@ namespace CanteenSystem.Controllers
             return View(mealOrder);
         }
 
-        // GET: MealOrders/History (xem lịch sử theo ngày)
+        // GET: MealOrders/History
         public ActionResult History(DateTime? date)
         {
             if (!User.Identity.IsAuthenticated)
@@ -130,9 +138,38 @@ namespace CanteenSystem.Controllers
                 query = query.Where(m => deptIds.Contains(m.DepartmentId));
             }
 
-            var orders = query.OrderBy(m => m.Department.DepartmentCode).ToList();
+            var orders = query
+                .OrderBy(m => m.Department == null ? string.Empty : m.Department.DepartmentCode)
+                .ToList();
 
+            // Lấy danh sách ngày có báo cơm (cho dropdown)
+            var dates = db.MealOrders
+                .Select(m => DbFunctions.TruncateTime(m.Date))
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToList()
+                .Where(d => d.HasValue)
+                .Select(d => new SelectListItem
+                {
+                    Value = d.Value.ToString("yyyy-MM-dd"),
+                    Text = d.Value.ToString("dd/MM/yyyy")
+                })
+                .ToList();
+
+            // Thêm ngày hiện tại nếu chưa có
+            if (!dates.Any(d => d.Value == selectedDate.ToString("yyyy-MM-dd")))
+            {
+                dates.Insert(0, new SelectListItem
+                {
+                    Value = selectedDate.ToString("yyyy-MM-dd"),
+                    Text = selectedDate.ToString("dd/MM/yyyy"),
+                    Selected = true
+                });
+            }
+
+            ViewBag.Dates = dates;
             ViewBag.SelectedDate = selectedDate;
+
             return View(orders);
         }
 
