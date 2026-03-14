@@ -38,7 +38,7 @@
 
                             <div class="form-group">
                                 @Html.LabelFor(model => model.Role, htmlAttributes: new { @class = "control-label" })
-                                @Html.DropDownListFor(model => model.Role, new SelectList(new[] { "Admin", "User" }), "-- Chọn vai trò --", new { @class = "form-control" })
+                                @Html.DropDownListFor(model => model.Role, new SelectList(new[] { "User" ,"Admin"}), new { @class = "form-control" })
                                 @Html.ValidationMessageFor(model => model.Role, "", new { @class = "text-danger" })
                             </div>
 

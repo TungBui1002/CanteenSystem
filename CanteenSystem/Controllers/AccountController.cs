@@ -52,7 +52,7 @@ namespace CanteenSystem.Controllers
                 return Redirect(returnUrl);
             }
 
-            return RedirectToAction("Index", "MealOrders");
+            return RedirectToAction("Create", "MealOrders");
         }
 
         // GET: Account/Logout

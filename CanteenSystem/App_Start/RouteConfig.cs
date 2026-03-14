@@ -12,7 +12,7 @@ namespace CanteenSystem
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "MealOrders", action = "Index", id = UrlParameter.Optional }
+                defaults: new { controller = "MealOrders", action = "Create", id = UrlParameter.Optional }
             );
         }
     }

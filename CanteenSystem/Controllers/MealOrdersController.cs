@@ -46,7 +46,8 @@ namespace CanteenSystem.Controllers
 
             return View(new MealOrder
             {
-                Date = DateTime.Today
+                Date = DateTime.Today,
+                Quantity = 1
             });
         }
 
