@@ -40,15 +40,15 @@ namespace CanteenSystem.Controllers
             ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode");
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName");
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName");
-            ViewBag.Shift = new SelectList(new[] {"Day", "Overtime", "Night" });
+            ViewBag.Shift = new SelectList(new[] {"Ca sáng", "Tăng ca", "Ca đêm" });
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" });
             ViewBag.SelectedDate = DateTime.Today.Date;
             // Default Time cho từng ca (dùng JS để lọc)
             ViewBag.TimeOptions = new Dictionary<string, List<string>>
             {
-                { "Day", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
-                { "Overtime", new List<string> { "16:30", "17:00", "20:00" } },
-                { "Night", new List<string> { "01:30" } }
+                { "Ca sáng", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
+                { "Tăng ca", new List<string> { "16:30", "17:00", "20:00" } },
+                { "Ca đêm", new List<string> { "01:30" } }
             };
 
             var model = new MealOrder
@@ -81,7 +81,7 @@ namespace CanteenSystem.Controllers
                 ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
                 ViewBag.MealId = new SelectList(db.Meals.Where(m => m.ApplicableFor == "Department"), "MealId", "MealName", mealOrder.MealId);
                 ViewBag.KitchenId = new SelectList(db.Kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-                ViewBag.Shift = new SelectList(new[] { "Day", "Overtime", "Night" });
+                ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
                 ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
                 ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" }, mealOrder.Time);
                 ViewBag.SelectedDate = mealOrder.Date;
@@ -107,7 +107,7 @@ namespace CanteenSystem.Controllers
             ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
             ViewBag.MealId = new SelectList(db.Meals.Where(m => m.ApplicableFor == "Department"), "MealId", "MealName", mealOrder.MealId);
             ViewBag.KitchenId = new SelectList(db.Kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-            ViewBag.Shift = new SelectList(new[] { "Day", "Overtime", "Night" }, mealOrder.Shift);
+            ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
             ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00","20:00", "01:30" }, mealOrder.Time);
             ViewBag.SelectedDate = mealOrder.Date;
@@ -225,13 +225,13 @@ namespace CanteenSystem.Controllers
             ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName", mealOrder.MealId);
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-            ViewBag.Shift = new SelectList(new[] { "Day", "Overtime", "Night" }, mealOrder.Shift);
+            ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
             ViewBag.TimeOptions = new Dictionary<string, List<string>>
             {
-                { "Day", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
-                { "Overtime", new List<string> { "16:30", "17:00", "20:00" } },
-                { "Night", new List<string> { "01:30" } }
+                { "Ca sáng", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
+                { "Tăng ca", new List<string> { "16:30", "17:00", "20:00" } },
+                { "Ca đêm", new List<string> { "01:30" } }
             };
 
             return View(mealOrder);
@@ -273,7 +273,7 @@ namespace CanteenSystem.Controllers
             ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName", mealOrder.MealId);
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-            ViewBag.Shift = new SelectList(new[] { "Day", "Overtime", "Night" }, mealOrder.Shift);
+            ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
             ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" }, mealOrder.Time);
 
