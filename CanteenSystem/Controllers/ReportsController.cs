@@ -32,6 +32,13 @@ namespace CanteenSystem.Controllers
         // GET: Reports/LeaderMonthly
         public ActionResult LeaderMonthly(DateTime? fromDate, DateTime? toDate)
         {
+            string role = Session["Role"]?.ToString();
+            if (string.IsNullOrEmpty(role) || role != "Admin")
+            {
+                // Không phải Admin → redirect về Login
+                return RedirectToAction("Login", "Account");
+            }
+
             DateTime start = fromDate ?? DateTime.Today.AddMonths(-1).Date;
             DateTime end = toDate ?? DateTime.Today.Date;
 
@@ -176,6 +183,13 @@ namespace CanteenSystem.Controllers
         // GET: Reports/MealMonthly
         public ActionResult MealMonthly(DateTime? fromDate, DateTime? toDate)
         {
+            string role = Session["Role"]?.ToString();
+            if (string.IsNullOrEmpty(role) || role != "Admin")
+            {
+                // Không phải Admin → redirect về Login
+                return RedirectToAction("Login", "Account");
+            }
+
             DateTime start = fromDate ?? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
             DateTime end = toDate ?? start.AddMonths(1).AddDays(-1);
 
