@@ -186,7 +186,17 @@
                         </button>*@
                     <div class="user-profile">
                         <img src="https://cdn-icons-png.freepik.com/512/17003/17003310.png" alt="User" class="user-avatar">
-                        <span class="user-name">Admin</span>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <span class="user-name">
+                                @User.Identity.Name
+                                <small>- @Session["Role"]</small>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="user-name">Không xác định</span>
+                        }
                     </div>
                 </div>
             </header>

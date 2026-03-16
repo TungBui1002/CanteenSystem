@@ -4,76 +4,342 @@
     ViewBag.Title = "Đặt cơm bộ phận - " + ViewBag.SelectedDate.ToString("dd/MM/yyyy");
 }
 
+<style>
+    .meal-form-wrapper {
+        background: linear-gradient(135deg, #f5f7fa 0%, #f9fafb 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+
+    .meal-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+        .meal-card:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+
+    .meal-header {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        color: white;
+        padding: 32px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+        .meal-header h4 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .meal-header i {
+            font-size: 32px;
+            opacity: 0.9;
+        }
+
+    .meal-body {
+        padding: 40px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .form-label-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+        .form-label-wrapper label {
+            margin: 0;
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+
+    .form-label-icon {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #dcfce7;
+        border-radius: 6px;
+        color: #22c55e;
+        font-size: 12px;
+    }
+
+    .form-control {
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: white;
+        color: #1f2937;
+        font-family: inherit;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .form-control:hover {
+            border-color: #22c55e;
+        }
+
+        .form-control option {
+            color: #1f2937;
+            padding: 8px 0;
+        }
+
+    input[type="date"].form-control {
+        cursor: pointer;
+    }
+
+    input[type="number"].form-control {
+        font-weight: 500;
+    }
+
+    .validation-error {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 6px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .alert-danger {
+        background-color: #fee2e2;
+        border: 2px solid #fecaca;
+        border-radius: 10px;
+        color: #991b1b;
+        padding: 16px;
+        margin-bottom: 24px;
+        font-weight: 500;
+    }
+
+    .form-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 36px;
+        flex-wrap: wrap;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        color: white;
+        border: none;
+        padding: 14px 32px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #d1d5db;
+        padding: 12px 28px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+            transform: translateY(-2px);
+        }
+
+    @@media (max-width: 768px) {
+        .meal-header {
+            padding: 24px;
+        }
+
+            .meal-header h4 {
+                font-size: 20px;
+            }
+
+        .meal-body {
+            padding: 24px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-buttons {
+            flex-direction: column;
+        }
+
+        .btn-submit,
+        .btn-secondary {
+            width: 100%;
+        }
+    }
+
+    /* Animation */
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .meal-card {
+        animation: slideUp 0.4s ease;
+    }
+
+    .form-field {
+        animation: slideUp 0.4s ease;
+    }
+</style>
+
 <div class="content">
-    <div class="container-fluid">
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                <h4><i class="fas fa-utensils"></i> Đặt cơm bộ phận - @ViewBag.SelectedDate.ToString("dd/MM/yyyy")</h4>
-            </div>
-            <div class="card-body">
-                @using (Html.BeginForm("Create", "MealOrders", FormMethod.Post))
-                {
-                    @Html.AntiForgeryToken()
-                    @Html.ValidationSummary(true, "Lỗi khi đặt cơm:", new { @class = "alert alert-danger" })
+    <div class="meal-form-wrapper">
+        <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+            <div class="meal-card">
+                <div class="meal-header">
+                    <i class="fas fa-utensils"></i>
+                    <h4>Đặt cơm bộ phận - @ViewBag.SelectedDate.ToString("dd/MM/yyyy")</h4>
+                </div>
+                <div class="meal-body">
+                    @using (Html.BeginForm("Create", "MealOrders", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true, "Lỗi khi đặt cơm:", new { @class = "alert alert-danger" })
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => model.DepartmentId, "Bộ phận")
-                        @Html.DropDownListFor(model => model.DepartmentId, (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control" })
-                        @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
-                    </div>
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <div class="form-label-wrapper">
+                                    <span class="form-label-icon"><i class="fas fa-building"></i></span>
+                                    @Html.LabelFor(model => model.DepartmentId, "Bộ phận")
+                                </div>
+                                @Html.DropDownListFor(model => model.DepartmentId, (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "validation-error" })
+                            </div>
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => model.Date, "Ngày")
-                        @Html.TextBoxFor(model => model.Date, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date", value = ViewBag.SelectedDate.ToString("yyyy-MM-dd") })
-                        @Html.ValidationMessageFor(model => model.Date, "", new { @class = "text-danger" })
-                    </div>
+                            <div class="form-field">
+                                <div class="form-label-wrapper">
+                                    <span class="form-label-icon"><i class="fas fa-calendar"></i></span>
+                                    @Html.LabelFor(model => model.Date, "Ngày")
+                                </div>
+                                @Html.TextBoxFor(model => model.Date, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date", value = ViewBag.SelectedDate.ToString("yyyy-MM-dd") })
+                                @Html.ValidationMessageFor(model => model.Date, "", new { @class = "validation-error" })
+                            </div>
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => model.Shift, "Ca làm việc")
-                        @Html.DropDownListFor(model => model.Shift, (SelectList)ViewBag.Shift, "-- Chọn ca --", new { @class = "form-control shift-select" })
-                        @Html.ValidationMessageFor(model => model.Shift, "", new { @class = "text-danger" })
-                    </div>
+                            <div class="form-field">
+                                <div class="form-label-wrapper">
+                                    <span class="form-label-icon"><i class="fas fa-clock"></i></span>
+                                    @Html.LabelFor(model => model.Shift, "Ca làm việc")
+                                </div>
+                                @Html.DropDownListFor(model => model.Shift, (SelectList)ViewBag.Shift, "-- Chọn ca --", new { @class = "form-control shift-select" })
+                                @Html.ValidationMessageFor(model => model.Shift, "", new { @class = "validation-error" })
+                            </div>
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => model.Time, "Thời gian ăn")
-                        @Html.DropDownListFor(model => model.Time, new SelectList(new[] { "" }), "-- Chọn giờ --", new { @class = "form-control time-select" })
-                        @Html.ValidationMessageFor(model => model.Time, "", new { @class = "text-danger" })
-                    </div>
+                            <div class="form-field">
+                                <div class="form-label-wrapper">
+                                    <span class="form-label-icon"><i class="fas fa-hourglass-end"></i></span>
+                                    @Html.LabelFor(model => model.Time, "Thời gian ăn")
+                                </div>
+                                @Html.DropDownListFor(model => model.Time, new SelectList(new[] { "" }), "-- Chọn giờ --", new { @class = "form-control time-select" })
+                                @Html.ValidationMessageFor(model => model.Time, "", new { @class = "validation-error" })
+                            </div>
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => model.MealId, "Món ăn")
-                        @Html.DropDownListFor(model => model.MealId, (SelectList)ViewBag.MealId, "-- Chọn món --", new { @class = "form-control" })
-                        @Html.ValidationMessageFor(model => model.MealId, "", new { @class = "text-danger" })
-                    </div>
+                            <div class="form-field">
+                                <div class="form-label-wrapper">
+                                    <span class="form-label-icon"><i class="fas fa-utensils"></i></span>
+                                    @Html.LabelFor(model => model.MealId, "Món ăn")
+                                </div>
+                                @Html.DropDownListFor(model => model.MealId, (SelectList)ViewBag.MealId, "-- Chọn món --", new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.MealId, "", new { @class = "validation-error" })
+                            </div>
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => model.KitchenId, "Nhà ăn")
-                        @Html.DropDownListFor(model => model.KitchenId, (SelectList)ViewBag.KitchenId, "-- Chọn nhà ăn --", new { @class = "form-control" })
-                        @Html.ValidationMessageFor(model => model.KitchenId, "", new { @class = "text-danger" })
-                    </div>
+                            <div class="form-field">
+                                <div class="form-label-wrapper">
+                                    <span class="form-label-icon"><i class="fas fa-home"></i></span>
+                                    @Html.LabelFor(model => model.KitchenId, "Nhà ăn")
+                                </div>
+                                @Html.DropDownListFor(model => model.KitchenId, (SelectList)ViewBag.KitchenId, "-- Chọn nhà ăn --", new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.KitchenId, "", new { @class = "validation-error" })
+                            </div>
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => model.PersonnelType, "Loại nhân sự")
-                        @Html.DropDownListFor(model => model.PersonnelType, (SelectList)ViewBag.PersonnelType, "-- Chọn loại --", new { @class = "form-control" })
-                        @Html.ValidationMessageFor(model => model.PersonnelType, "", new { @class = "text-danger" })
-                    </div>
+                            <div class="form-field">
+                                <div class="form-label-wrapper">
+                                    <span class="form-label-icon"><i class="fas fa-users"></i></span>
+                                    @Html.LabelFor(model => model.PersonnelType, "Loại nhân sự")
+                                </div>
+                                @Html.DropDownListFor(model => model.PersonnelType, (SelectList)ViewBag.PersonnelType, "-- Chọn loại --", new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.PersonnelType, "", new { @class = "validation-error" })
+                            </div>
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => model.Quantity, "Số lượng (phần)")
-                        @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control", type = "number", min = "1" } })
-                        @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
-                    </div>
+                            <div class="form-field">
+                                <div class="form-label-wrapper">
+                                    <span class="form-label-icon"><i class="fas fa-boxes"></i></span>
+                                    @Html.LabelFor(model => model.Quantity, "Số lượng (phần)")
+                                </div>
+                                @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control", type = "number", min = "1" } })
+                                @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "validation-error" })
+                            </div>
+                        </div>
 
-                    @*<div class="form-group">
-                        @Html.LabelFor(model => model.Price, "Tổng tiền (VNĐ)")
-                        @Html.TextBoxFor(model => model.Price, new { @class = "form-control", @readonly = "readonly" })
-                    </div>*@
-
-                    <div class="text-center mt-4">
-                        <input type="submit" value="Xác nhận đặt cơm" class="btn btn-success btn-lg" />
-                        <a href="@Url.Action("History")" class="btn btn-secondary ml-2">Xem lịch sử</a>
-                    </div>
-                }
+                        <div class="form-buttons">
+                            <input type="submit" value="✓ Xác nhận đặt cơm" class="btn-submit" />
+                            <a href="@Url.Action("History")" class="btn-secondary">📋 Xem lịch sử</a>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     </div>
@@ -83,25 +349,30 @@
     @Scripts.Render("~/bundles/jqueryval")
 
     <script>
-        $(document).ready(function () {
-            // Lấy dữ liệu TimeOptions từ ViewBag (đã encode toàn bộ dictionary)
-            var timeOptions = @Html.Raw(Json.Encode(ViewBag.TimeOptions));
+    $(document).ready(function () {
 
-            $('.shift-select').on('change', function () {
-                var shift = $(this).val();  // Lấy giá trị ca từ dropdown
-                var timeSelect = $(this).closest('.form-group').next('.form-group').find('.time-select');  // Tìm dropdown Time gần nhất
-                timeSelect.empty();
+        var timeOptions = @Html.Raw(Json.Encode(ViewBag.TimeOptions));
 
-                // Lấy danh sách giờ tương ứng với ca
-                var times = timeOptions[shift] || [];
-                timeSelect.append('<option value="">-- Chọn giờ --</option>');
-                times.forEach(function(time) {
-                    timeSelect.append('<option value="' + time + '">' + time + '</option>');
-                });
+        $('.shift-select').on('change', function () {
+
+            var shift = $(this).val();
+
+            var timeSelect = $('.time-select');
+
+            timeSelect.empty();
+
+            var times = timeOptions[shift] || [];
+
+            timeSelect.append('<option value="">-- Chọn giờ --</option>');
+
+            times.forEach(function (time) {
+                timeSelect.append('<option value="' + time + '">' + time + '</option>');
             });
 
-            // Trigger lần đầu (nếu có giá trị mặc định)
-            $('.shift-select').trigger('change');
         });
+
+        $('.shift-select').trigger('change');
+
+    });
     </script>
 }
