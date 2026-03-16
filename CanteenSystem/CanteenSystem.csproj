@@ -263,6 +263,7 @@
     <Compile Include="Models\UserDepartment.cs" />
     <Compile Include="Models\ViewModel\LeaderMonthlyReportViewModel.cs" />
     <Compile Include="Models\ViewModel\LeaderOrderViewModel.cs" />
+    <Compile Include="Models\ViewModel\MealMonthlyReportViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -362,6 +363,7 @@
     <Content Include="Views\MealOrders\History.cshtml" />
     <Content Include="Views\Reports\Index.cshtml" />
     <Content Include="Views\Reports\LeaderMonthly.cshtml" />
+    <Content Include="Views\Reports\MealMonthly.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
