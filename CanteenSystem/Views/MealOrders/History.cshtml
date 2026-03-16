@@ -35,6 +35,7 @@
                                 <th>Loại nhân sự</th>
                                 <th>Tổng tiền</th>
                                 <th>Người tạo</th>
+                                <th>Người sửa</th>
                                 @if (isAdmin)
                                 {
                                     <th>Thao tác</th>
@@ -54,6 +55,7 @@
                                     <td>@item.PersonnelType</td>
                                     <td>@item.Price.ToString("N0")</td>
                                     <td>@item.Creator</td>
+                                    <td>@item.Modifier</td>
                                     @if (isAdmin)
                                     {
                                         <td>
