@@ -360,6 +360,8 @@
     <Content Include="Views\Users\ResetPassword.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\MealOrders\History.cshtml" />
+    <Content Include="Views\Reports\Index.cshtml" />
+    <Content Include="Views\Reports\LeaderMonthly.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

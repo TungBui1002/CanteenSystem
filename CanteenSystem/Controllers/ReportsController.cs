@@ -168,6 +168,8 @@ namespace CanteenSystem.Controllers
             return View(report);
         }
 
+        // ---------------------- BÁO CÁO THÁNG BỘ PHẬN ----------------------
+
         protected override void Dispose(bool disposing)
         {
             db.Dispose();
