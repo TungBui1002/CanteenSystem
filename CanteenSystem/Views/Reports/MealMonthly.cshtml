@@ -1,0 +1,121 @@
+﻿@model IEnumerable<CanteenSystem.Models.ViewModel.MealMonthlyReportViewModel>
+
+@{
+    ViewBag.Title = "Báo cáo tháng bộ phận";
+    var fromDate = (DateTime)ViewBag.FromDate;
+    var toDate = (DateTime)ViewBag.ToDate;
+}
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-chart-bar"></i> Báo cáo tháng bộ phận</h4>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("MealMonthly", "Reports", FormMethod.Post))
+                {
+                    <div class="form-row mb-4">
+                        <div class="col-md-4">
+                            <label>Từ ngày</label>
+                            <input type="date" name="fromDate" value="@fromDate.ToString("yyyy-MM-dd")" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label>Đến ngày</label>
+                            <input type="date" name="toDate" value="@toDate.ToString("yyyy-MM-dd")" class="form-control" />
+                        </div>
+                        <div class="col-md-4 align-self-end">
+                            <button type="submit" class="btn btn-primary">Xem báo cáo</button>
+                            <button type="submit" formaction="@Url.Action("MealMonthlyExport")" class="btn btn-success ml-2">
+                                <i class="fas fa-file-excel"></i> Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th rowspan="2">STT</th>
+                                <th rowspan="2">First Day</th>
+                                <th rowspan="2">Last Day</th>
+                                <th rowspan="2">Cost Center</th>
+                                <th rowspan="2">Dept.No</th>
+                                <th rowspan="2">Dept Name</th>
+                                <th rowspan="2">Type</th>
+                                <th colspan="4">Day Shift</th>
+                                <th colspan="3">Overtime Shift</th>
+                                <th colspan="1">Night Shift</th>
+                                <th rowspan="2">Total Portions</th>
+                                <th rowspan="2">Total Cost (VND)</th>
+                            </tr>
+                            <tr>
+                                <th>06:00</th>
+                                <th>10:00</th>
+                                <th>11:30</th>
+                                <th>12:00</th>
+                                @*<th>Total Day</th>*@
+                                <th>16:30</th>
+                                <th>17:00</th>
+                                <th>20:00</th>
+                                @*<th>Total Overtime</th>*@
+                                <th>01:30</th>
+                                @*<th>Total Night</th>*@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int stt = 1;
+                            }
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@stt</td>
+                                    <td>@fromDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@toDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.CostCenter</td>
+                                    <td>@item.DepartmentCode</td>
+                                    <td>@item.DepartmentName</td>
+                                    <td>@item.PersonnelType</td>
+                                    <td>@(item.DayHours.ContainsKey("06:00") ? item.DayHours["06:00"] : 0)</td>
+                                    <td>@(item.DayHours.ContainsKey("10:00") ? item.DayHours["10:00"] : 0)</td>
+                                    <td>@(item.DayHours.ContainsKey("11:30") ? item.DayHours["11:30"] : 0)</td>
+                                    <td>@(item.DayHours.ContainsKey("12:00") ? item.DayHours["12:00"] : 0)</td>
+                                    @*<td>@item.DayTotal</td>*@
+                                    <td>@(item.OvertimeHours.ContainsKey("16:30") ? item.OvertimeHours["16:30"] : 0)</td>
+                                    <td>@(item.OvertimeHours.ContainsKey("17:00") ? item.OvertimeHours["17:00"] : 0)</td>
+                                    <td>@(item.OvertimeHours.ContainsKey("20:00") ? item.OvertimeHours["20:00"] : 0)</td>
+                                    @*<td>@item.OvertimeTotal</td>*@
+                                    <td>@(item.NightHours.ContainsKey("01:30") ? item.NightHours["01:30"] : 0)</td>
+                                    @*<td>@item.NightTotal</td>*@
+                                    <td>@item.TotalPortions</td>
+                                    <td>@item.TotalCost.ToString("N0")</td>
+                                </tr>
+                                stt++;
+                            }
+                        </tbody>
+                        <tfoot class="table-active">
+                            <tr>
+                                <td colspan="7"><strong>Tổng cộng</strong></td>
+                                <td>@ViewBag.TotalDay06</td>
+                                <td>@ViewBag.TotalDay10</td>
+                                <td>@ViewBag.TotalDay1130</td>
+                                <td>@ViewBag.TotalDay12</td>
+                                @*<td>@ViewBag.TotalDay</td>*@
+                                <td>@ViewBag.TotalOvertime1630</td>
+                                <td>@ViewBag.TotalOvertime17</td>
+                                <td>@ViewBag.TotalOvertime20</td>
+                                @*<td>@ViewBag.TotalOvertime</td>*@
+                                <td>@ViewBag.TotalNight0130</td>
+                                @*<td>@ViewBag.TotalNight</td>*@
+                                <td>@ViewBag.GrandTotalPortions</td>
+                                <td>@ViewBag.GrandTotalCost.ToString("N0")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
