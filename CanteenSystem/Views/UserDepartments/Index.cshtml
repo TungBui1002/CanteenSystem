@@ -24,15 +24,21 @@
                             <table class="table table-striped table-hover">
                                 <thead class="thead-dark">
                                     <tr>
+                                        <th>STT</th>
                                         <th>User (Tên đăng nhập)</th>
                                         <th>Bộ phận (Mã - Tên)</th>
                                         <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @{
+                                        int Stt = 1;
+                                    }
+
                                     @foreach (var item in Model)
                                     {
                                         <tr>
+                                            <td>@Stt</td>
                                             <td>@Html.DisplayFor(modelItem => item.User.Username)</td>
                                             <td>@Html.DisplayFor(modelItem => item.Department.DepartmentCode) - @Html.DisplayFor(modelItem => item.Department.DepartmentName)</td>
                                             <td>
@@ -41,6 +47,7 @@
                                                 </a>
                                             </td>
                                         </tr>
+                                        Stt++;
                                     }
                                 </tbody>
                             </table>

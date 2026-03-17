@@ -181,105 +181,39 @@ namespace CanteenSystem.Controllers
         // ---------------------- BÁO CÁO THÁNG BỘ PHẬN ----------------------
 
         // GET: Reports/MealMonthly
-        public ActionResult MealMonthly(DateTime? fromDate, DateTime? toDate)
+        public ActionResult MealMonthly(DateTime? fromDate, DateTime? toDate, int? kitchenId)
         {
             string role = Session["Role"]?.ToString();
             if (string.IsNullOrEmpty(role) || role != "Admin")
             {
-                // Không phải Admin → redirect về Login
                 return RedirectToAction("Login", "Account");
             }
 
             DateTime start = fromDate ?? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
             DateTime end = toDate ?? start.AddMonths(1).AddDays(-1);
 
-            // 1️⃣ Lấy dữ liệu từ DB trước
-            var data = db.MealOrders
+            // Query DB
+            var query = db.MealOrders
                 .Include(m => m.Department)
-                .Where(m => m.Date >= start && m.Date <= end)
-                .ToList();
+                .Where(m => m.Date >= start && m.Date <= end);
 
-            // 2️⃣ Group trong RAM (tránh lỗi EF)
-            var report = data
-                .GroupBy(m => new { m.DepartmentId, m.PersonnelType, m.MealId })
-                .Select(g =>
-                {
-                    var item = new MealMonthlyReportViewModel();
-
-                    var dept = g.First().Department;
-
-                    item.CostCenter = dept?.CostCenter ?? "";
-                    item.DepartmentCode = dept?.DepartmentCode ?? "";
-                    item.DepartmentName = dept?.DepartmentName ?? "Unknown";
-                    item.PersonnelType = g.Key.PersonnelType ?? "Unknown";
-
-                    item.DayHours = new Dictionary<string, int>();
-                    item.OvertimeHours = new Dictionary<string, int>();
-                    item.NightHours = new Dictionary<string, int>();
-
-                    foreach (var order in g)
-                    {
-                        string time = order.Time.ToString(@"hh\:mm");
-
-                        var shift = order.Shift?.Trim();
-
-                        if (shift.Equals("Ca sáng"))
-                        {
-                            if (!item.DayHours.ContainsKey(time))
-                                item.DayHours[time] = 0;
-
-                            item.DayHours[time] += order.Quantity;
-                            item.DayTotal += order.Quantity;
-                        }
-                        else if (shift.Equals("Tăng ca"))
-                        {
-                            if (!item.OvertimeHours.ContainsKey(time))
-                                item.OvertimeHours[time] = 0;
-
-                            item.OvertimeHours[time] += order.Quantity;
-                            item.OvertimeTotal += order.Quantity;
-                        }
-                        else if (shift.Equals("Ca đêm"))
-                        {
-                            if (!item.NightHours.ContainsKey(time))
-                                item.NightHours[time] = 0;
-
-                            item.NightHours[time] += order.Quantity;
-                            item.NightTotal += order.Quantity;
-                        }
-
-                        item.TotalPortions += order.Quantity;
-                        item.TotalCost += order.Price; // cách tính tiền
-                    }
-
-                    return item;
-
-                })
-                .OrderBy(x => x.DepartmentCode)
-                .ThenBy(x => x.PersonnelType)
-                .ToList();
-
-
-            // 3️⃣ đảm bảo các giờ luôn tồn tại
-            string[] dayTimes = { "06:00", "10:00", "11:30", "12:00" };
-            string[] overtimeTimes = { "16:30", "17:00", "20:00" };
-
-            foreach (var r in report)
+            // filter nhà ăn
+            if (kitchenId.HasValue)
             {
-                foreach (var t in dayTimes)
-                    if (!r.DayHours.ContainsKey(t))
-                        r.DayHours[t] = 0;
-
-                foreach (var t in overtimeTimes)
-                    if (!r.OvertimeHours.ContainsKey(t))
-                        r.OvertimeHours[t] = 0;
-
-                if (!r.NightHours.ContainsKey("01:30"))
-                    r.NightHours["01:30"] = 0;
+                query = query.Where(m => m.KitchenId == kitchenId.Value);
             }
 
+            // load vào RAM
+            var data = query.ToList();
+
+            // build report
+            var report = BuildMealMonthlyReport(data);
+
+            // tổng
             ViewBag.FromDate = start;
             ViewBag.ToDate = end;
+            ViewBag.KitchenId = kitchenId;
+
             ViewBag.TotalDay = report.Sum(x => x.DayTotal);
             ViewBag.TotalOvertime = report.Sum(x => x.OvertimeTotal);
             ViewBag.TotalNight = report.Sum(x => x.NightTotal);
@@ -291,15 +225,22 @@ namespace CanteenSystem.Controllers
 
         // POST: Reports/MealMonthlyExport
         [HttpPost]
-        public ActionResult MealMonthlyExport(DateTime fromDate, DateTime toDate)
+        public ActionResult MealMonthlyExport(DateTime fromDate, DateTime toDate, int? kitchenId)
         {
             DateTime start = fromDate.Date;
             DateTime end = toDate.Date;
 
-            var data = db.MealOrders
+            var query = db.MealOrders
                 .Include(m => m.Department)
-                .Where(m => m.Date >= start && m.Date <= end)
-                .ToList();
+                .Where(m => m.Date >= start && m.Date <= end);
+
+            // filter nhà ăn
+            if (kitchenId.HasValue)
+            {
+                query = query.Where(m => m.KitchenId == kitchenId.Value);
+            }
+
+            var data = query.ToList();
 
             var report = BuildMealMonthlyReport(data);
 
@@ -309,11 +250,11 @@ namespace CanteenSystem.Controllers
 
                 string[] headers =
                 {
-                    "STT","First Day","Last Day","Cost Center","Dept.No","Dept Name","Type",
-                    "Day Shift","06:00","10:00","11:30","12:00",
-                    "Overtime Shift","16:30","17:00","20:00",
-                    "Night Shift","01:30","Total Portions","Total Cost"
-                };
+            "STT","First Day","Last Day","Cost Center","Dept.No","Dept Name","Type",
+            "Day Shift","06:00","10:00","11:30","12:00",
+            "Overtime Shift","16:30","17:00","20:00",
+            "Night Shift","01:30","Total Portions","Total Cost"
+        };
 
                 for (int i = 0; i < headers.Length; i++)
                     ws.Cells[1, i + 1].Value = headers[i];
@@ -368,7 +309,7 @@ namespace CanteenSystem.Controllers
 
         private List<MealMonthlyReportViewModel> BuildMealMonthlyReport(List<MealOrder> data)
         {
-            return data
+            var report = data
                 .GroupBy(m => new { m.DepartmentId, m.PersonnelType })
                 .Select(g =>
                 {
@@ -391,21 +332,27 @@ namespace CanteenSystem.Controllers
 
                         if (m.Shift == "Ca sáng")
                         {
-                            if (!item.DayHours.ContainsKey(time)) item.DayHours[time] = 0;
+                            if (!item.DayHours.ContainsKey(time))
+                                item.DayHours[time] = 0;
+
                             item.DayHours[time] += m.Quantity;
                             item.DayTotal += m.Quantity;
                         }
 
-                        if (m.Shift == "Tăng ca")
+                        else if (m.Shift == "Tăng ca")
                         {
-                            if (!item.OvertimeHours.ContainsKey(time)) item.OvertimeHours[time] = 0;
+                            if (!item.OvertimeHours.ContainsKey(time))
+                                item.OvertimeHours[time] = 0;
+
                             item.OvertimeHours[time] += m.Quantity;
                             item.OvertimeTotal += m.Quantity;
                         }
 
-                        if (m.Shift == "Ca đêm")
+                        else if (m.Shift == "Ca đêm")
                         {
-                            if (!item.NightHours.ContainsKey(time)) item.NightHours[time] = 0;
+                            if (!item.NightHours.ContainsKey(time))
+                                item.NightHours[time] = 0;
+
                             item.NightHours[time] += m.Quantity;
                             item.NightTotal += m.Quantity;
                         }
@@ -416,7 +363,28 @@ namespace CanteenSystem.Controllers
 
                     return item;
                 })
+                .OrderBy(x => x.DepartmentCode)
+                .ThenBy(x => x.PersonnelType)
                 .ToList();
+
+            string[] dayTimes = { "06:00", "10:00", "11:30", "12:00" };
+            string[] overtimeTimes = { "16:30", "17:00", "20:00" };
+
+            foreach (var r in report)
+            {
+                foreach (var t in dayTimes)
+                    if (!r.DayHours.ContainsKey(t))
+                        r.DayHours[t] = 0;
+
+                foreach (var t in overtimeTimes)
+                    if (!r.OvertimeHours.ContainsKey(t))
+                        r.OvertimeHours[t] = 0;
+
+                if (!r.NightHours.ContainsKey("01:30"))
+                    r.NightHours["01:30"] = 0;
+            }
+
+            return report;
         }
 
         protected override void Dispose(bool disposing)

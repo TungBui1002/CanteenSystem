@@ -24,9 +24,19 @@
                             <label>Đến ngày</label>
                             <input type="date" name="toDate" value="@toDate.ToString("yyyy-MM-dd")" class="form-control" />
                         </div>
+                        <div class="col-md-4">
+                            <label>Nhà ăn</label>
+                            <select name="kitchenId" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="1" @(Request["kitchenId"] == "1" ? "selected" : "")>Nhà Nam Phong</option>
+                                <option value="2" @(Request["kitchenId"] == "2" ? "selected" : "")>Nhà Hồng Phát</option>
+                            </select>
+                        </div>
                         <div class="col-md-4 align-self-end">
                             <button type="submit" class="btn btn-primary">Xem báo cáo</button>
-                            <button type="submit" formaction="@Url.Action("MealMonthlyExport")" class="btn btn-success ml-2">
+                            <button type="submit"
+                                    formaction="@Url.Action("MealMonthlyExport","Reports")"
+                                    class="btn btn-success ml-2">
                                 <i class="fas fa-file-excel"></i> Xuất Excel
                             </button>
                         </div>
