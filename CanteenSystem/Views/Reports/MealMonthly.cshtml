@@ -28,9 +28,10 @@
                             <label>Nhà ăn</label>
                             <select name="kitchenId" class="form-control">
                                 <option value="">Tất cả</option>
-                                <option value="1" @(Request["kitchenId"] == "1" ? "selected" : "")>Nhà Nam Phong</option>
-                                <option value="2" @(Request["kitchenId"] == "2" ? "selected" : "")>Nhà Hồng Phát</option>
+                                <option value="1" @(ViewBag.KitchenId?.ToString() == "1" ? "selected" : "")>Nhà Nam Phong</option>
+                                <option value="2" @(ViewBag.KitchenId?.ToString() == "2" ? "selected" : "")>Nhà Hồng Phát</option>
                             </select>
+
                         </div>
                         <div class="col-md-4 align-self-end">
                             <button type="submit" class="btn btn-primary">Xem báo cáo</button>
