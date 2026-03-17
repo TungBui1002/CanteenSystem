@@ -13,25 +13,6 @@
                         <h4 class="mb-0"><i class="fas fa-user-tie"></i> Danh sách cán bộ</h4>
                     </div>
                     <div class="card-body">
-                        @if (TempData["Success"] != null)
-                        {
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                @TempData["Success"]
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">×</span>
-                                </button>
-                            </div>
-                        }
-
-                        @if (TempData["Error"] != null)
-                        {
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                @TempData["Error"]
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">×</span>
-                                </button>
-                            </div>
-                        }
 
                         <p>
                             <a href="@Url.Action("Create")" class="btn btn-success">

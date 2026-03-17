@@ -10,15 +10,26 @@
         <div class="card">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas fa-history"></i> Lịch sử báo cơm bộ phận</h4>
-                
+                <a href="@Url.Action("Create")" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Báo cơm mới
+                </a>
             </div>
             <div class="card-body">
-                <!-- Dropdown chọn ngày -->
-                <div class="mb-3">
-                    <input type="text"
-                           id="datePicker"
-                           class="form-control"
-                           value="@ViewBag.SelectedDate.ToString("yyyy-MM-dd")" />
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <input type="text" id="datePicker" class="form-control" value="@ViewBag.SelectedDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-8">
+                        <form method="get" style="display:flex; gap:8px;">
+                            @Html.Hidden("date", ((DateTime)ViewBag.SelectedDate).ToString("yyyy-MM-dd"))
+                            <input type="text" name="search" class="form-control" placeholder="Nhập mã hoặc tên bộ phận..." value="@ViewBag.Search" />
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Tìm</button>
+                            @if (!string.IsNullOrEmpty(ViewBag.Search))
+                            {
+                                <a href="@Url.Action("History", new { date = ViewBag.SelectedDate })" class="btn btn-secondary">Xóa</a>
+                            }
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Bảng dữ liệu -->
@@ -26,9 +37,11 @@
                     <table class="table table-bordered table-hover">
                         <thead class="thead-dark">
                             <tr>
+                                <th>Mã bộ phận</th>
                                 <th>Bộ phận</th>
                                 <th>Ngày</th>
                                 <th>Ca làm</th>
+                                <th>Giờ ăn</th>
                                 <th>Món ăn</th>
                                 <th>Nhà ăn</th>
                                 <th>Số lượng</th>
@@ -46,9 +59,11 @@
                             @foreach (var item in Model)
                             {
                                 <tr>
+                                    <td>@(item.Department?.DepartmentCode)</td>
                                     <td>@(item.Department?.DepartmentName)</td>
                                     <td>@item.Date.ToString("dd/MM/yyyy")</td>
                                     <td>@item.Shift</td>
+                                    <td>@item.Time</td>
                                     <td>@(item.Meal?.MealName)</td>
                                     <td>@(item.Kitchen?.KitchenName)</td>
                                     <td>@item.Quantity</td>
@@ -72,9 +87,6 @@
                         </tbody>
                     </table>
                 </div>
-                <a href="@Url.Action("Create")" class="btn btn-success">
-                    <i class="fas fa-plus"></i> Báo cơm mới
-                </a>
 
                 @if (!Model.Any())
                 {

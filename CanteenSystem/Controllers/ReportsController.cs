@@ -29,6 +29,8 @@ namespace CanteenSystem.Controllers
             return View();
         }
 
+        // ---------------------------------------------- BÁO CÁO THÁNG CÁN BỘ ---------------------------------------------------------
+
         // GET: Reports/LeaderMonthly
         public ActionResult LeaderMonthly(DateTime? fromDate, DateTime? toDate)
         {
@@ -178,7 +180,7 @@ namespace CanteenSystem.Controllers
             return View(report);
         }
 
-        // ---------------------- BÁO CÁO THÁNG BỘ PHẬN ----------------------
+        // ---------------------------------------------- BÁO CÁO THÁNG BỘ PHẬN ---------------------------------------------------------
 
         // GET: Reports/MealMonthly
         public ActionResult MealMonthly(DateTime? fromDate, DateTime? toDate, int? kitchenId)
@@ -225,75 +227,27 @@ namespace CanteenSystem.Controllers
 
         // POST: Reports/MealMonthlyExport
         [HttpPost]
-        public ActionResult MealMonthlyExport(DateTime fromDate, DateTime toDate, int? kitchenId)
+        public ActionResult MealMonthlyExport(DateTime fromDate, DateTime toDate)
         {
             DateTime start = fromDate.Date;
             DateTime end = toDate.Date;
 
-            var query = db.MealOrders
+            var data = db.MealOrders
                 .Include(m => m.Department)
-                .Where(m => m.Date >= start && m.Date <= end);
+                .Where(m => m.Date >= start && m.Date <= end)
+                .ToList();
 
-            // filter nhà ăn
-            if (kitchenId.HasValue)
-            {
-                query = query.Where(m => m.KitchenId == kitchenId.Value);
-            }
-
-            var data = query.ToList();
-
-            var report = BuildMealMonthlyReport(data);
+            var allData = data;
+            var namPhong = data.Where(x => x.KitchenId == 1).ToList();
+            var hongPhat = data.Where(x => x.KitchenId == 2).ToList();
 
             using (var package = new ExcelPackage())
             {
-                var ws = package.Workbook.Worksheets.Add("Meal Monthly");
+                CreateSheet(package, "Tất cả", BuildMealMonthlyReport(allData), start, end);
 
-                string[] headers =
-                {
-            "STT","First Day","Last Day","Cost Center","Dept.No","Dept Name","Type",
-            "Day Shift","06:00","10:00","11:30","12:00",
-            "Overtime Shift","16:30","17:00","20:00",
-            "Night Shift","01:30","Total Portions","Total Cost"
-        };
+                CreateSheet(package, "Nam Phong", BuildMealMonthlyReport(namPhong), start, end);
 
-                for (int i = 0; i < headers.Length; i++)
-                    ws.Cells[1, i + 1].Value = headers[i];
-
-                int row = 2;
-                int stt = 1;
-
-                foreach (var item in report)
-                {
-                    ws.Cells[row, 1].Value = stt++;
-                    ws.Cells[row, 2].Value = start.ToString("dd/MM/yyyy");
-                    ws.Cells[row, 3].Value = end.ToString("dd/MM/yyyy");
-
-                    ws.Cells[row, 4].Value = item.CostCenter;
-                    ws.Cells[row, 5].Value = item.DepartmentCode;
-                    ws.Cells[row, 6].Value = item.DepartmentName;
-                    ws.Cells[row, 7].Value = item.PersonnelType;
-
-                    ws.Cells[row, 8].Value = item.DayTotal;
-                    ws.Cells[row, 9].Value = item.DayHours.ContainsKey("06:00") ? item.DayHours["06:00"] : 0;
-                    ws.Cells[row, 10].Value = item.DayHours.ContainsKey("10:00") ? item.DayHours["10:00"] : 0;
-                    ws.Cells[row, 11].Value = item.DayHours.ContainsKey("11:30") ? item.DayHours["11:30"] : 0;
-                    ws.Cells[row, 12].Value = item.DayHours.ContainsKey("12:00") ? item.DayHours["12:00"] : 0;
-
-                    ws.Cells[row, 13].Value = item.OvertimeTotal;
-                    ws.Cells[row, 14].Value = item.OvertimeHours.ContainsKey("16:30") ? item.OvertimeHours["16:30"] : 0;
-                    ws.Cells[row, 15].Value = item.OvertimeHours.ContainsKey("17:00") ? item.OvertimeHours["17:00"] : 0;
-                    ws.Cells[row, 16].Value = item.OvertimeHours.ContainsKey("20:00") ? item.OvertimeHours["20:00"] : 0;
-
-                    ws.Cells[row, 17].Value = item.NightTotal;
-                    ws.Cells[row, 18].Value = item.NightHours.ContainsKey("01:30") ? item.NightHours["01:30"] : 0;
-
-                    ws.Cells[row, 19].Value = item.TotalPortions;
-                    ws.Cells[row, 20].Value = item.TotalCost;
-
-                    row++;
-                }
-
-                ws.Cells.AutoFitColumns();
+                CreateSheet(package, "Hồng Phát", BuildMealMonthlyReport(hongPhat), start, end);
 
                 var stream = new MemoryStream();
                 package.SaveAs(stream);
@@ -385,6 +339,117 @@ namespace CanteenSystem.Controllers
             }
 
             return report;
+        }
+
+        private void CreateSheet(ExcelPackage package, string sheetName,List<MealMonthlyReportViewModel> report,DateTime start, DateTime end)
+        {
+            var ws = package.Workbook.Worksheets.Add(sheetName);
+
+            int row = 1;
+
+            // HEADER DÒNG 1
+            ws.Cells[row, 1].Value = "STT";
+            ws.Cells[row, 2].Value = "First Day";
+            ws.Cells[row, 3].Value = "Last Day";
+            ws.Cells[row, 4].Value = "Cost Center";
+            ws.Cells[row, 5].Value = "Dept.No";
+            ws.Cells[row, 6].Value = "Dept Name";
+            ws.Cells[row, 7].Value = "Type";
+
+            ws.Cells[row, 8].Value = "Day Shift";
+            ws.Cells[row, 12].Value = "Overtime Shift";
+            ws.Cells[row, 15].Value = "Night Shift";
+
+            ws.Cells[row, 17].Value = "Total Portions";
+            ws.Cells[row, 18].Value = "Total Cost (VND)";
+
+            // MERGE
+            ws.Cells[1, 1, 2, 1].Merge = true;
+            ws.Cells[1, 2, 2, 2].Merge = true;
+            ws.Cells[1, 3, 2, 3].Merge = true;
+            ws.Cells[1, 4, 2, 4].Merge = true;
+            ws.Cells[1, 5, 2, 5].Merge = true;
+            ws.Cells[1, 6, 2, 6].Merge = true;
+            ws.Cells[1, 7, 2, 7].Merge = true;
+
+            ws.Cells[1, 8, 1, 11].Merge = true;
+            ws.Cells[1, 12, 1, 14].Merge = true;
+            ws.Cells[1, 15, 1, 15].Merge = true;
+
+            ws.Cells[1, 17, 2, 17].Merge = true;
+            ws.Cells[1, 18, 2, 18].Merge = true;
+
+            // HEADER DÒNG 2
+            row = 2;
+
+            ws.Cells[row, 8].Value = "06:00";
+            ws.Cells[row, 9].Value = "10:00";
+            ws.Cells[row, 10].Value = "11:30";
+            ws.Cells[row, 11].Value = "12:00";
+
+            ws.Cells[row, 12].Value = "16:30";
+            ws.Cells[row, 13].Value = "17:00";
+            ws.Cells[row, 14].Value = "20:00";
+
+            ws.Cells[row, 15].Value = "01:30";
+
+            // STYLE HEADER
+            using (var range = ws.Cells[1, 1, 2, 18])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                range.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin);
+            }
+
+            row = 3;
+            int stt = 1;
+
+            foreach (var item in report)
+            {
+                ws.Cells[row, 1].Value = stt++;
+                ws.Cells[row, 2].Value = start.ToString("dd/MM/yyyy");
+                ws.Cells[row, 3].Value = end.ToString("dd/MM/yyyy");
+
+                ws.Cells[row, 4].Value = item.CostCenter;
+                ws.Cells[row, 5].Value = item.DepartmentCode;
+                ws.Cells[row, 6].Value = item.DepartmentName;
+                ws.Cells[row, 7].Value = item.PersonnelType;
+
+                ws.Cells[row, 8].Value = item.DayHours.ContainsKey("06:00") ? item.DayHours["06:00"] : 0;
+                ws.Cells[row, 9].Value = item.DayHours.ContainsKey("10:00") ? item.DayHours["10:00"] : 0;
+                ws.Cells[row, 10].Value = item.DayHours.ContainsKey("11:30") ? item.DayHours["11:30"] : 0;
+                ws.Cells[row, 11].Value = item.DayHours.ContainsKey("12:00") ? item.DayHours["12:00"] : 0;
+
+                ws.Cells[row, 12].Value = item.OvertimeHours.ContainsKey("16:30") ? item.OvertimeHours["16:30"] : 0;
+                ws.Cells[row, 13].Value = item.OvertimeHours.ContainsKey("17:00") ? item.OvertimeHours["17:00"] : 0;
+                ws.Cells[row, 14].Value = item.OvertimeHours.ContainsKey("20:00") ? item.OvertimeHours["20:00"] : 0;
+
+                ws.Cells[row, 15].Value = item.NightHours.ContainsKey("01:30") ? item.NightHours["01:30"] : 0;
+
+                ws.Cells[row, 17].Value = item.TotalPortions;
+                ws.Cells[row, 18].Value = item.TotalCost;
+
+                ws.Cells[row, 18].Style.Numberformat.Format = "#,##0";
+
+                row++;
+            }
+
+            // TỔNG
+            ws.Cells[row, 1].Value = "Tổng cộng";
+            ws.Cells[row, 1, row, 7].Merge = true;
+
+            ws.Cells[row, 17].Value = report.Sum(x => x.TotalPortions);
+            ws.Cells[row, 18].Value = report.Sum(x => x.TotalCost);
+
+            ws.Cells[row, 18].Style.Numberformat.Format = "#,##0";
+
+            using (var range = ws.Cells[row, 1, row, 18])
+            {
+                range.Style.Font.Bold = true;
+            }
+
+            ws.Cells.AutoFitColumns();
         }
 
         protected override void Dispose(bool disposing)
