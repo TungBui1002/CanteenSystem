@@ -44,33 +44,36 @@ namespace CanteenSystem.Controllers
             DateTime start = fromDate ?? DateTime.Today.AddMonths(-1).Date;
             DateTime end = toDate ?? DateTime.Today.Date;
 
-            // Lấy tất cả cán bộ
-            var leaders = db.Leaders.Include(l => l.Department).ToList();
+            var orders = db.LeaderOrders
+                .Include(o => o.Meal)
+                .Include(o => o.Leader.Department)
+                .Where(o => o.Date >= start && o.Date <= end)
+                .ToList();
 
-            // Tạo báo cáo tổng hợp
-            var report = leaders.Select(l =>
-            {
-                var orders = db.LeaderOrders
-                    .Include(o => o.Meal)
-                    .Where(o => o.EmployeeId == l.EmployeeId && o.Date >= start && o.Date <= end)
-                    .ToList();
-
-                int manCount = orders.Count(o => o.Meal.MealName.Contains("mặn") && o.Status == "Đặt");
-                int chayCount = orders.Count(o => o.Meal.MealName.Contains("chay") && o.Status == "Đặt");
-                decimal totalPrice = orders.Where(o => o.Status == "Đặt").Sum(o => o.Price);
-
-                return new LeaderMonthlyReportViewModel
+            var report = orders
+                .GroupBy(o => o.EmployeeId)
+                .Select(g =>
                 {
-                    EmployeeId = l.EmployeeId,
-                    FullName = l.FullName,
-                    DepartmentName = l.Department?.DepartmentName ?? "Chưa gán",
-                    CostCenter = l.CostCenter,
-                    ManCount = manCount,
-                    ChayCount = chayCount,
-                    TotalPortions = manCount + chayCount,
-                    TotalCost = totalPrice
-                };
-            }).OrderBy(r => r.EmployeeId).ToList();
+                    var first = g.First();
+
+                    int manCount = g.Count(o => o.Meal.MealName.Contains("mặn") && o.Status == "Đặt");
+                    int chayCount = g.Count(o => o.Meal.MealName.Contains("chay") && o.Status == "Đặt");
+                    decimal totalPrice = g.Where(o => o.Status == "Đặt").Sum(o => o.Price);
+
+                    return new LeaderMonthlyReportViewModel
+                    {
+                        EmployeeId = first.EmployeeId,
+                        FullName = first.Leader.FullName,
+                        DepartmentName = first.Leader.Department?.DepartmentName ?? "Chưa gán",
+                        CostCenter = first.Leader.CostCenter,
+                        ManCount = manCount,
+                        ChayCount = chayCount,
+                        TotalPortions = manCount + chayCount,
+                        TotalCost = totalPrice
+                    };
+                })
+                .OrderBy(x => x.EmployeeId)
+                .ToList();
 
             ViewBag.FromDate = start;
             ViewBag.ToDate = end;
@@ -90,31 +93,36 @@ namespace CanteenSystem.Controllers
             DateTime end = toDate.Date;
 
             // Logic lấy report (giữ nguyên như cũ)
-            var leaders = db.Leaders.Include(l => l.Department).ToList();
+            var orders = db.LeaderOrders
+                .Include(o => o.Meal)
+                .Include(o => o.Leader.Department)
+                .Where(o => o.Date >= start && o.Date <= end)
+                .ToList();
 
-            var report = leaders.Select(l =>
-            {
-                var orders = db.LeaderOrders
-                    .Include(o => o.Meal)
-                    .Where(o => o.EmployeeId == l.EmployeeId && o.Date >= start && o.Date <= end)
-                    .ToList();
-
-                int manCount = orders.Count(o => o.Meal.MealName.Contains("mặn") && o.Status == "Đặt");
-                int chayCount = orders.Count(o => o.Meal.MealName.Contains("chay") && o.Status == "Đặt");
-                decimal totalPrice = orders.Where(o => o.Status == "Đặt").Sum(o => o.Price);
-
-                return new LeaderMonthlyReportViewModel
+            var report = orders
+                .GroupBy(o => o.EmployeeId)
+                .Select(g =>
                 {
-                    EmployeeId = l.EmployeeId,
-                    FullName = l.FullName,
-                    DepartmentName = l.Department?.DepartmentName ?? "Chưa gán",
-                    CostCenter = l.CostCenter,
-                    ManCount = manCount,
-                    ChayCount = chayCount,
-                    TotalPortions = manCount + chayCount,
-                    TotalCost = totalPrice
-                };
-            }).OrderBy(r => r.EmployeeId).ToList();
+                    var first = g.First();
+
+                    int manCount = g.Count(o => o.Meal.MealName.Contains("mặn") && o.Status == "Đặt");
+                    int chayCount = g.Count(o => o.Meal.MealName.Contains("chay") && o.Status == "Đặt");
+                    decimal totalPrice = g.Where(o => o.Status == "Đặt").Sum(o => o.Price);
+
+                    return new LeaderMonthlyReportViewModel
+                    {
+                        EmployeeId = first.EmployeeId,
+                        FullName = first.Leader.FullName,
+                        DepartmentName = first.Leader.Department?.DepartmentName ?? "Chưa gán",
+                        CostCenter = first.Leader.CostCenter,
+                        ManCount = manCount,
+                        ChayCount = chayCount,
+                        TotalPortions = manCount + chayCount,
+                        TotalCost = totalPrice
+                    };
+                })
+                .OrderBy(x => x.EmployeeId)
+                .ToList();
 
             ViewBag.FromDate = start;
             ViewBag.ToDate = end;
