@@ -51,6 +51,33 @@ namespace CanteenSystem.Controllers
                 { "Ca đêm", new List<string> { "01:30" } }
             };
 
+            ViewBag.MealOptions = new Dictionary<string, Dictionary<string, List<string>>>
+            {
+                {
+                    "Ca sáng", new Dictionary<string, List<string>>
+                    {
+                        { "06:00", new List<string> { "Mì" } },
+                        { "10:00", new List<string> { "Cơm mặn", "Cơm chay" } },
+                        { "11:30", new List<string> { "Cơm mặn", "Cơm chay" } },
+                        { "12:00", new List<string> { "Cơm mặn", "Cơm chay" } }
+                    }
+                },
+                {
+                    "Tăng ca", new Dictionary<string, List<string>>
+                    {
+                        { "16:30", new List<string> { "Cơm mặn", "Cơm chay", "Phở" } },
+                        { "17:00", new List<string> { "Cơm mặn", "Cơm chay", "Phở" } },
+                        { "20:00", new List<string> { "Cơm mặn", "Cơm chay", "Phở" } }
+                    }
+                },
+                {
+                    "Ca đêm", new Dictionary<string, List<string>>
+                    {
+                        { "01:30", new List<string> { "Cơm mặn", "Cơm chay", "Phở", "Mì" } }
+                    }
+                }
+            };
+
             var model = new MealOrder
             {
                 Date = DateTime.Today.Date,
@@ -63,55 +90,57 @@ namespace CanteenSystem.Controllers
         // POST: MealOrders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "DepartmentId,Date,Shift,Time,MealId,KitchenId,PersonnelType,Quantity,Price,CreatedAt,Creator")] MealOrder mealOrder)
+        public ActionResult Create(string[] DepartmentId, string[] Shift, string[] Time, string[] MealId,
+                                   string[] KitchenId, string[] PersonnelType, int[] Quantity)
         {
             if (!User.Identity.IsAuthenticated)
-            {
                 return RedirectToAction("Login", "Account");
-            }
 
             var departments = GetAccessibleDepartments();
-
-            // Kiểm tra quyền bộ phận
             var role = Session["Role"]?.ToString();
 
-            if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)
-                && !departments.Any(d => d.DepartmentId == mealOrder.DepartmentId))
+            if (DepartmentId == null || DepartmentId.Length == 0)
             {
-                ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
-                ViewBag.MealId = new SelectList(db.Meals.Where(m => m.ApplicableFor == "Department"), "MealId", "MealName", mealOrder.MealId);
-                ViewBag.KitchenId = new SelectList(db.Kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-                ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
-                ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
-                ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" }, mealOrder.Time);
-                ViewBag.SelectedDate = mealOrder.Date;
-                return View(mealOrder);
+                TempData["Error"] = "Vui lòng thêm ít nhất một suất ăn!";
+                return RedirectToAction("Create");
             }
 
-            if (ModelState.IsValid)
+            for (int i = 0; i < DepartmentId.Length; i++)
             {
-                mealOrder.CreatedAt = DateTime.Now;
-                mealOrder.Creator = User.Identity.Name ?? "Admin";
+                if (string.IsNullOrEmpty(DepartmentId[i]) || string.IsNullOrEmpty(MealId[i]))
+                    continue;
 
+                var mealOrder = new MealOrder
+                {
+                    DepartmentId = int.Parse(DepartmentId[i]),
+                    Date = DateTime.Today,
+                    Shift = Shift[i],
+                    Time = TimeSpan.Parse(Time[i]),
+                    MealId = int.Parse(MealId[i]),
+                    KitchenId = int.Parse(KitchenId[i]),
+                    PersonnelType = PersonnelType[i],
+                    Quantity = Quantity[i],
+                    CreatedAt = DateTime.Now,
+                    Creator = User.Identity.Name ?? "Admin"
+                };
+
+                // Tính giá
                 var meal = db.Meals.Find(mealOrder.MealId);
                 if (meal != null)
-                {
                     mealOrder.Price = meal.Price * mealOrder.Quantity;
+
+                // Kiểm tra quyền
+                if (!role.Equals("Admin", StringComparison.OrdinalIgnoreCase) &&
+                    !departments.Any(d => d.DepartmentId == mealOrder.DepartmentId))
+                {
+                    return RedirectToAction("Create");
                 }
 
                 db.MealOrders.Add(mealOrder);
-                db.SaveChanges();
-                return RedirectToAction("History", new { date = mealOrder.Date });
             }
 
-            ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
-            ViewBag.MealId = new SelectList(db.Meals.Where(m => m.ApplicableFor == "Department"), "MealId", "MealName", mealOrder.MealId);
-            ViewBag.KitchenId = new SelectList(db.Kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-            ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
-            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
-            ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00","20:00", "01:30" }, mealOrder.Time);
-            ViewBag.SelectedDate = mealOrder.Date;
-            return View(mealOrder);
+            db.SaveChanges();
+            return RedirectToAction("History", new { date = DateTime.Today });
         }
 
         // GET: MealOrders/History

@@ -37,6 +37,7 @@
                     <table class="table table-bordered table-hover">
                         <thead class="thead-dark">
                             <tr>
+                                <th>TT Chi Phí</th>
                                 <th>Mã bộ phận</th>
                                 <th>Bộ phận</th>
                                 <th>Ngày</th>
@@ -59,6 +60,7 @@
                             @foreach (var item in Model)
                             {
                                 <tr>
+                                    <td>@(item.Department?.CostCenter)</td>
                                     <td>@(item.Department?.DepartmentCode)</td>
                                     <td>@(item.Department?.DepartmentName)</td>
                                     <td>@item.Date.ToString("dd/MM/yyyy")</td>

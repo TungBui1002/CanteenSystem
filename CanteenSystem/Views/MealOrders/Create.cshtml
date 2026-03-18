@@ -16,12 +16,7 @@
         border-radius: 16px;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
         overflow: hidden;
-        transition: all 0.3s ease;
     }
-
-        .meal-card:hover {
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-        }
 
     .meal-header {
         background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
@@ -32,311 +27,149 @@
         gap: 16px;
     }
 
-        .meal-header h4 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-        }
-
-        .meal-header i {
-            font-size: 32px;
-            opacity: 0.9;
-        }
-
     .meal-body {
         padding: 40px;
     }
 
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 24px;
-        margin-bottom: 32px;
-    }
-
-    .form-field {
-        display: flex;
-        flex-direction: column;
+    .dynamic-row {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
         position: relative;
     }
 
-    .form-label-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 10px;
+    .remove-row-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        color: #ef4444;
+        cursor: pointer;
+        font-size: 18px;
     }
 
-        .form-label-wrapper label {
-            margin: 0;
-            font-weight: 600;
-            color: #1f2937;
-            font-size: 14px;
-            letter-spacing: 0.3px;
-        }
-
-    .form-label-icon {
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #dcfce7;
-        border-radius: 6px;
-        color: #22c55e;
-        font-size: 12px;
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 18px;
     }
 
-    .form-control {
-        padding: 12px 16px;
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
-        font-size: 14px;
-        transition: all 0.3s ease;
+    .sticky-actions {
+        position: sticky;
+        bottom: 0;
         background: white;
-        color: #1f2937;
-        font-family: inherit;
-    }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #22c55e;
-            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-        }
-
-        .form-control:hover {
-            border-color: #22c55e;
-        }
-
-        .form-control option {
-            color: #1f2937;
-            padding: 8px 0;
-        }
-
-    input[type="date"].form-control {
-        cursor: pointer;
-    }
-
-    input[type="number"].form-control {
-        font-weight: 500;
-    }
-
-    .validation-error {
-        color: #dc2626;
-        font-size: 12px;
-        margin-top: 6px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .alert-danger {
-        background-color: #fee2e2;
-        border: 2px solid #fecaca;
-        border-radius: 10px;
-        color: #991b1b;
         padding: 16px;
-        margin-bottom: 24px;
-        font-weight: 500;
+        border-top: 1px solid #e5e7eb;
+        text-align: center;
+        z-index: 10;
     }
 
-    .form-buttons {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        margin-top: 36px;
-        flex-wrap: wrap;
-    }
-
-    .btn-submit {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-        color: white;
-        border: none;
-        padding: 14px 32px;
-        border-radius: 10px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
-    .btn-secondary {
-        background: #f3f4f6;
-        color: #374151;
-        border: 2px solid #d1d5db;
-        padding: 12px 28px;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-        .btn-secondary:hover {
-            background: #e5e7eb;
-            border-color: #9ca3af;
-            transform: translateY(-2px);
-        }
-
-    @@media (max-width: 768px) {
-        .meal-header {
-            padding: 24px;
-        }
-
-            .meal-header h4 {
-                font-size: 20px;
-            }
-
-        .meal-body {
-            padding: 24px;
-        }
-
-        .form-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-
-        .form-buttons {
-            flex-direction: column;
-        }
-
-        .btn-submit,
-        .btn-secondary {
-            width: 100%;
-        }
-    }
-
-    /* Animation */
-    @@keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .meal-card {
-        animation: slideUp 0.4s ease;
-    }
-
-    .form-field {
-        animation: slideUp 0.4s ease;
+    .form-control:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
     }
 </style>
 
 <div class="content">
     <div class="meal-form-wrapper">
-        <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+        <div class="container-fluid" style="max-width: 100%; margin: 0 auto;">
             <div class="meal-card">
                 <div class="meal-header">
-                    <i class="fas fa-utensils"></i>
-                    <h4>Đặt cơm bộ phận - @ViewBag.SelectedDate.ToString("dd/MM/yyyy")</h4>
+                    <div style="flex:1">
+                        <h4 class="mb-0">Đặt cơm bộ phận - @ViewBag.SelectedDate.ToString("dd/MM/yyyy")</h4>
+                    </div>
+                    <a href="@Url.Action("History")" class="btn btn-light">
+                        <i class="fas fa-history"></i>Xem Lịch sử
+                    </a>
                 </div>
+
                 <div class="meal-body">
                     @using (Html.BeginForm("Create", "MealOrders", FormMethod.Post))
                     {
                         @Html.AntiForgeryToken()
-                        @Html.ValidationSummary(true, "Lỗi khi đặt cơm:", new { @class = "alert alert-danger" })
 
-                        <div class="form-grid">
-                            <div class="form-field">
-                                <div class="form-label-wrapper">
-                                    <span class="form-label-icon"><i class="fas fa-building"></i></span>
-                                    @Html.LabelFor(model => model.DepartmentId, "Bộ phận")
-                                </div>
-                                @Html.DropDownListFor(model => model.DepartmentId, (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control" })
-                                @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "validation-error" })
-                            </div>
+                        <div id="meal-rows">
+                            <!-- Dòng đầu tiên -->
+                            <div class="dynamic-row" data-index="0">
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">×</button>
 
-                            <div class="form-field">
-                                <div class="form-label-wrapper">
-                                    <span class="form-label-icon"><i class="fas fa-calendar"></i></span>
-                                    @Html.LabelFor(model => model.Date, "Ngày")
-                                </div>
-                                @Html.TextBoxFor(model => model.Date, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date", value = ViewBag.SelectedDate.ToString("yyyy-MM-dd") })
-                                @Html.ValidationMessageFor(model => model.Date, "", new { @class = "validation-error" })
-                            </div>
+                                <div class="form-grid">
+                                    <div>
+                                        @Html.Label("DepartmentId_0", "Bộ phận")
+                                        @Html.DropDownList("DepartmentId[0]", (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control" })
+                                    </div>
 
-                            <div class="form-field">
-                                <div class="form-label-wrapper">
-                                    <span class="form-label-icon"><i class="fas fa-clock"></i></span>
-                                    @Html.LabelFor(model => model.Shift, "Ca làm việc")
-                                </div>
-                                @Html.DropDownListFor(model => model.Shift, (SelectList)ViewBag.Shift, "-- Chọn ca --", new { @class = "form-control shift-select" })
-                                @Html.ValidationMessageFor(model => model.Shift, "", new { @class = "validation-error" })
-                            </div>
+                                    <div>
+                                        @Html.Label("Shift_0", "Ca làm việc")
+                                        @Html.DropDownList("Shift[0]", (SelectList)ViewBag.Shift, "-- Chọn ca --", new { @class = "form-control shift-select" })
+                                    </div>
 
-                            <div class="form-field">
-                                <div class="form-label-wrapper">
-                                    <span class="form-label-icon"><i class="fas fa-hourglass-end"></i></span>
-                                    @Html.LabelFor(model => model.Time, "Thời gian ăn")
-                                </div>
-                                @Html.DropDownListFor(model => model.Time, new SelectList(new[] { "" }), "-- Chọn giờ --", new { @class = "form-control time-select" })
-                                @Html.ValidationMessageFor(model => model.Time, "", new { @class = "validation-error" })
-                            </div>
+                                    <div>
+                                        @Html.Label("Time_0", "Thời gian ăn")
+                                        @Html.DropDownList("Time[0]", new SelectList(new string[0]), "-- Chọn giờ --", new { @class = "form-control time-select" })
+                                    </div>
 
-                            <div class="form-field">
-                                <div class="form-label-wrapper">
-                                    <span class="form-label-icon"><i class="fas fa-utensils"></i></span>
-                                    @Html.LabelFor(model => model.MealId, "Món ăn")
-                                </div>
-                                @Html.DropDownListFor(model => model.MealId, (SelectList)ViewBag.MealId, "-- Chọn món --", new { @class = "form-control" })
-                                @Html.ValidationMessageFor(model => model.MealId, "", new { @class = "validation-error" })
-                            </div>
+                                    <div>
+                                        @Html.Label("MealId_0", "Món ăn")
+                                        @Html.DropDownList("MealId[0]", (SelectList)ViewBag.MealId, "-- Chọn món --", new { @class = "form-control" })
+                                    </div>
 
-                            <div class="form-field">
-                                <div class="form-label-wrapper">
-                                    <span class="form-label-icon"><i class="fas fa-home"></i></span>
-                                    @Html.LabelFor(model => model.KitchenId, "Nhà ăn")
-                                </div>
-                                @Html.DropDownListFor(model => model.KitchenId, (SelectList)ViewBag.KitchenId, "-- Chọn nhà ăn --", new { @class = "form-control" })
-                                @Html.ValidationMessageFor(model => model.KitchenId, "", new { @class = "validation-error" })
-                            </div>
+                                    <div>
+                                        @Html.Label("KitchenId_0", "Nhà ăn")
+                                        @Html.DropDownList("KitchenId[0]", (SelectList)ViewBag.KitchenId, "-- Chọn nhà ăn --", new { @class = "form-control" })
+                                    </div>
 
-                            <div class="form-field">
-                                <div class="form-label-wrapper">
-                                    <span class="form-label-icon"><i class="fas fa-users"></i></span>
-                                    @Html.LabelFor(model => model.PersonnelType, "Loại nhân sự")
-                                </div>
-                                @Html.DropDownListFor(model => model.PersonnelType, (SelectList)ViewBag.PersonnelType, "-- Chọn loại --", new { @class = "form-control" })
-                                @Html.ValidationMessageFor(model => model.PersonnelType, "", new { @class = "validation-error" })
-                            </div>
+                                    <div>
+                                        @Html.Label("PersonnelType_0", "Loại nhân sự")
+                                        @Html.DropDownList("PersonnelType[0]", (SelectList)ViewBag.PersonnelType, "-- Chọn loại --", new { @class = "form-control" })
+                                    </div>
 
-                            <div class="form-field">
-                                <div class="form-label-wrapper">
-                                    <span class="form-label-icon"><i class="fas fa-boxes"></i></span>
-                                    @Html.LabelFor(model => model.Quantity, "Số lượng (phần)")
+                                    <div>
+                                        @Html.Label("Quantity_0", "Số lượng (phần)")
+                                        <input type="number" name="Quantity[0]" value="1" min="1" class="form-control" />
+                                    </div>
                                 </div>
-                                @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control", type = "number", min = "1" } })
-                                @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "validation-error" })
                             </div>
                         </div>
 
-                        <div class="form-buttons">
-                            <input type="submit" value="✓ Xác nhận đặt cơm" class="btn-submit" />
-                            <a href="@Url.Action("History")" class="btn-secondary">📋 Xem lịch sử</a>
+                        <!-- Server-rendered template with placeholder __INDEX__ -->
+                        <script type="text/template" id="row-template">
+                            <div class="dynamic-row" data-index="__INDEX__">
+                                <button type="button" class="remove-row-btn" onclick="removeRow(this)">×</button>
+                                <div class="form-grid">
+                                    <div>
+                                        @Html.DropDownList("DepartmentId[__INDEX__]", (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control" })
+                                    </div>
+                                    <div>
+                                        @Html.DropDownList("Shift[__INDEX__]", (SelectList)ViewBag.Shift, "-- Chọn ca --", new { @class = "form-control shift-select" })
+                                    </div>
+                                    <div>
+                                        <select name="Time[__INDEX__]" class="form-control time-select">
+                                            <option value="">-- Chọn giờ --</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        @Html.DropDownList("MealId[__INDEX__]", (SelectList)ViewBag.MealId, "-- Chọn món --", new { @class = "form-control" })
+                                    </div>
+                                    <div>
+                                        @Html.DropDownList("KitchenId[__INDEX__]", (SelectList)ViewBag.KitchenId, "-- Chọn nhà ăn --", new { @class = "form-control" })
+                                    </div>
+                                    <div>
+                                        @Html.DropDownList("PersonnelType[__INDEX__]", (SelectList)ViewBag.PersonnelType, "-- Chọn loại --", new { @class = "form-control" })
+                                    </div>
+                                    <div>
+                                        <input type="number" name="Quantity[__INDEX__]" value="1" min="1" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        </script>
+
+                        <div class="sticky-actions">
+                            <button type="button" id="add-row" class="btn btn-info">
+                                <i class="fas fa-plus"></i> Thêm dòng
+                            </button>
+                            <input type="submit" value="Xác nhận báo cơm" class="btn btn-success btn-lg ml-3" />
                         </div>
                     }
                 </div>
@@ -348,31 +181,110 @@
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
 
-    <script>
-    $(document).ready(function () {
+<script>
+        let rowIndex = 1;
 
-        var timeOptions = @Html.Raw(Json.Encode(ViewBag.TimeOptions));
+        function addRow() {
+            const container = document.getElementById('meal-rows');
+            const template = document.getElementById('row-template').innerHTML;
+            const html = template.replace(/__INDEX__/g, rowIndex);
 
-        $('.shift-select').on('change', function () {
+            const temp = document.createElement('div');
+            temp.innerHTML = html.trim();
+            const newRow = temp.firstElementChild;
+            container.appendChild(newRow);
 
-            var shift = $(this).val();
+            // Attach event for shift -> time update
+            const shiftSelect = newRow.querySelector('.shift-select');
+            if (shiftSelect) {
+                shiftSelect.addEventListener('change', updateTimeOptions);
+            }
 
-            var timeSelect = $('.time-select');
+            // Attach event for time -> meal update
+            const timeSelect = newRow.querySelector('.time-select');
+            if (timeSelect) {
+                timeSelect.addEventListener('change', function () {
+                    updateMealOptions(newRow);
+                });
+            }
 
-            timeSelect.empty();
+            rowIndex++;
+        }
 
-            var times = timeOptions[shift] || [];
+        function removeRow(btn) {
+            if (document.querySelectorAll('.dynamic-row').length <= 1) return;
 
-            timeSelect.append('<option value="">-- Chọn giờ --</option>');
+            if (confirm("Xóa dòng này?")) {
+                btn.closest('.dynamic-row').remove();
+                updateRowIndex();
+            }
+        }
 
-            times.forEach(function (time) {
-                timeSelect.append('<option value="' + time + '">' + time + '</option>');
+        function updateTimeOptions(e) {
+            const shift = e.target.value;
+            const timeSelect = e.target.closest('.dynamic-row').querySelector('.time-select');
+            timeSelect.innerHTML = '<option value="">-- Chọn giờ --</option>';
+
+            const timeOptions = @Html.Raw(Json.Encode(ViewBag.TimeOptions));
+
+            if (timeOptions && timeOptions[shift]) {
+                timeOptions[shift].forEach(time => {
+                    const opt = document.createElement('option');
+                    opt.value = time;
+                    opt.textContent = time;
+                    timeSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function updateMealOptions(row) {
+            const shift = row.querySelector('.shift-select').value;
+            const time = row.querySelector('.time-select').value;
+            const mealSelect = row.querySelector('select[name^="MealId"]');
+
+            const mealOptions = @Html.Raw(Json.Encode(ViewBag.MealOptions));
+            const allMeals = @Html.Raw(Json.Encode(ViewBag.MealId));
+
+            mealSelect.innerHTML = '<option value="">-- Chọn món --</option>';
+
+            if (!shift || !time) return;
+
+            const allowedMeals = mealOptions?.[shift]?.[time];
+            if (!allowedMeals) return;
+
+            allMeals.forEach(meal => {
+                if (allowedMeals.includes(meal.Text)) {
+                    const opt = document.createElement('option');
+                    opt.value = meal.Value;
+                    opt.textContent = meal.Text;
+                    mealSelect.appendChild(opt);
+                }
             });
+        }
 
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('time-select')) {
+                const row = e.target.closest('.dynamic-row');
+                updateMealOptions(row);
+            }
         });
 
-        $('.shift-select').trigger('change');
+        //loading khi submit form
+        document.querySelector("form").addEventListener("submit", function () {
+            const btn = document.querySelector('input[type="submit"]');
+            btn.value = "Đang xử lý...";
+            btn.disabled = true;
+        });
 
-    });
-    </script>
+        // Khởi tạo cho dòng đầu tiên
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('add-row').addEventListener('click', addRow);
+
+            const firstShift = document.querySelector('.shift-select');
+            if (firstShift) {
+                firstShift.addEventListener('change', updateTimeOptions);
+                firstShift.dispatchEvent(new Event('change'));
+            }
+        });
+</script>
 }
