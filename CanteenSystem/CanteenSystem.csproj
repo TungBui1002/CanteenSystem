@@ -239,6 +239,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\DepartmentsController.cs" />
     <Compile Include="Controllers\KitchensController.cs" />
     <Compile Include="Controllers\LeaderOrdersController.cs" />
@@ -261,6 +262,7 @@
     <Compile Include="Models\MealOrder.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserDepartment.cs" />
+    <Compile Include="Models\ViewModel\DashboardViewModel.cs" />
     <Compile Include="Models\ViewModel\LeaderMonthlyReportViewModel.cs" />
     <Compile Include="Models\ViewModel\LeaderOrderViewModel.cs" />
     <Compile Include="Models\ViewModel\MealMonthlyReportViewModel.cs" />
@@ -364,6 +366,7 @@
     <Content Include="Views\Reports\Index.cshtml" />
     <Content Include="Views\Reports\LeaderMonthly.cshtml" />
     <Content Include="Views\Reports\MealMonthly.cshtml" />
+    <Content Include="Views\Dashboard\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
