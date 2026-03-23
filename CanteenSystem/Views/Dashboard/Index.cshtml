@@ -1,0 +1,121 @@
+﻿@{
+    ViewBag.Title = "Dashboard - Canteen System";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mt-4 mb-4">Dashboard - Tổng quan hệ thống</h2>
+        </div>
+    </div>
+
+    <!-- Card lớn đầu trang -->
+    <div class="row">
+        <div class="col-lg-6 col-md-12">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Tổng quan hôm nay</div>
+                <div class="card-body">
+                    <h5 class="card-title">Tổng phần ăn toàn công ty</h5>
+                    <p class="card-text display-4">@ViewBag.TotalPortionsToday</p>
+                    <p class="card-text">Tổng tiền ước tính: @ViewBag.TotalCostToday.ToString("N0") VNĐ</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-12">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Cảnh báo nhanh</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        @if ((int)ViewBag.DepartmentsNotReported > 0)
+                        {
+                            <li class="list-group-item bg-warning text-dark">
+                                <strong>@ViewBag.DepartmentsNotReported</strong> bộ phận chưa báo hôm nay
+                            </li>
+                        }
+                        @if ((int)ViewBag.LeadersNotOrdered > 0)
+                        {
+                            <li class="list-group-item bg-danger text-white">
+                                <strong>@ViewBag.LeadersNotOrdered</strong> cán bộ chưa đặt cơm hôm nay
+                            </li>
+                        }
+                        @if ((int)ViewBag.DepartmentsNotReported == 0 && (int)ViewBag.LeadersNotOrdered == 0)
+                        {
+                            <li class="list-group-item bg-success text-white">
+                                Tất cả đã báo cơm hôm nay!
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top bộ phận & món ăn -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">Top 5 bộ phận báo nhiều nhất hôm nay</div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Bộ phận</th>
+                                <th>Tổng phần</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var dept in ViewBag.TopDepartments)
+                            {
+                                <tr>
+                                    <td>@dept.DepartmentName</td>
+                                    <td>@dept.TotalPortions</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">Top 3 món ăn được đặt nhiều nhất hôm nay</div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Món ăn</th>
+                                <th>Số phần</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var meal in ViewBag.TopMealsByShift)
+                            {
+                                <tr>
+                                    <td>@meal.MealName (@meal.Shift)</td>
+                                    <td>@meal.TotalPortions</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link nhanh -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">Link nhanh</div>
+                <div class="card-body">
+                    <a href="@Url.Action("Index", "LeaderOrders")" class="btn btn-outline-primary m-2">Báo cơm cán bộ</a>
+                    <a href="@Url.Action("Create", "MealOrders")" class="btn btn-outline-success m-2">Báo cơm bộ phận</a>
+                    <a href="@Url.Action("MealMonthly", "Reports")" class="btn btn-outline-info m-2">Báo cáo tháng bộ phận</a>
+                    <a href="@Url.Action("Index", "Users")" class="btn btn-outline-warning m-2">Quản lý người dùng</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -4,79 +4,81 @@
     ViewBag.Title = "Sửa báo cơm bộ phận - " + Model.Date.ToString("dd/MM/yyyy");
 }
 
-<div class="container-fluid">
-    <div class="card">
-        <div class="card-header bg-warning text-dark">
-            <h4><i class="fas fa-edit"></i> Sửa báo cơm bộ phận - @Model.Date.ToString("dd/MM/yyyy")</h4>
-        </div>
-        <div class="card-body">
-            @using (Html.BeginForm())
-            {
-                @Html.AntiForgeryToken()
-                @Html.HiddenFor(model => model.OrderId)
-                @Html.HiddenFor(model => model.CreatedAt)
-                @Html.HiddenFor(model => model.Creator)
-
-                @Html.ValidationSummary(true, "Lỗi khi sửa:", new { @class = "alert alert-danger" })
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.DepartmentId, "Bộ phận")
-                @Html.DropDownListFor(model => model.DepartmentId, (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
+<div class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4><i class="fas fa-edit"></i> Sửa báo cơm bộ phận - @Model.Date.ToString("dd/MM/yyyy")</h4>
             </div>
+            <div class="card-body">
+                @using (Html.BeginForm())
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(model => model.OrderId)
+                    @Html.HiddenFor(model => model.CreatedAt)
+                    @Html.HiddenFor(model => model.Creator)
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.Date, "Ngày")
-                    @Html.TextBoxFor(model => model.Date, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-                    @Html.ValidationMessageFor(model => model.Date, "", new { @class = "text-danger" })
-                </div>
+                    @Html.ValidationSummary(true, "Lỗi khi sửa:", new { @class = "alert alert-danger" })
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.Shift, "Ca làm việc")
-                    @Html.DropDownListFor(model => model.Shift, (SelectList)ViewBag.Shift, "-- Chọn ca --", new { @class = "form-control shift-select" })
-                    @Html.ValidationMessageFor(model => model.Shift, "", new { @class = "text-danger" })
-                </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.DepartmentId, "Bộ phận")
+                        @Html.DropDownListFor(model => model.DepartmentId, (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
+                    </div>
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.Time, "Thời gian ăn")
-                    @Html.DropDownListFor(model => model.Time, new SelectList(new[] { "" }), "-- Chọn giờ --", new { @class = "form-control time-select" })
-                    @Html.ValidationMessageFor(model => model.Time, "", new { @class = "text-danger" })
-                </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Date, "Ngày")
+                        @Html.TextBoxFor(model => model.Date, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                        @Html.ValidationMessageFor(model => model.Date, "", new { @class = "text-danger" })
+                    </div>
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.MealId, "Món ăn")
-                    @Html.DropDownListFor(model => model.MealId, (SelectList)ViewBag.MealId, "-- Chọn món --", new { @class = "form-control" })
-                    @Html.ValidationMessageFor(model => model.MealId, "", new { @class = "text-danger" })
-                </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Shift, "Ca làm việc")
+                        @Html.DropDownListFor(model => model.Shift, (SelectList)ViewBag.Shift, "-- Chọn ca --", new { @class = "form-control shift-select" })
+                        @Html.ValidationMessageFor(model => model.Shift, "", new { @class = "text-danger" })
+                    </div>
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.KitchenId, "Nhà ăn")
-                    @Html.DropDownListFor(model => model.KitchenId, (SelectList)ViewBag.KitchenId, "-- Chọn nhà ăn --", new { @class = "form-control" })
-                    @Html.ValidationMessageFor(model => model.KitchenId, "", new { @class = "text-danger" })
-                </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Time, "Thời gian ăn")
+                        @Html.DropDownListFor(model => model.Time, new SelectList(new[] { "" }), "-- Chọn giờ --", new { @class = "form-control time-select" })
+                        @Html.ValidationMessageFor(model => model.Time, "", new { @class = "text-danger" })
+                    </div>
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.PersonnelType, "Loại nhân sự")
-                    @Html.DropDownListFor(model => model.PersonnelType, (SelectList)ViewBag.PersonnelType, "-- Chọn loại --", new { @class = "form-control" })
-                    @Html.ValidationMessageFor(model => model.PersonnelType, "", new { @class = "text-danger" })
-                </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.MealId, "Món ăn")
+                        @Html.DropDownListFor(model => model.MealId, (SelectList)ViewBag.MealId, "-- Chọn món --", new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.MealId, "", new { @class = "text-danger" })
+                    </div>
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.Quantity, "Số lượng (phần)")
-                    @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control", type = "number", min = "1" } })
-                    @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
-                </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.KitchenId, "Nhà ăn")
+                        @Html.DropDownListFor(model => model.KitchenId, (SelectList)ViewBag.KitchenId, "-- Chọn nhà ăn --", new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.KitchenId, "", new { @class = "text-danger" })
+                    </div>
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.Price, "Tổng tiền (VNĐ)")
-                    @Html.TextBoxFor(model => model.Price, new { @class = "form-control", @readonly = "readonly" })
-                </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PersonnelType, "Loại nhân sự")
+                        @Html.DropDownListFor(model => model.PersonnelType, (SelectList)ViewBag.PersonnelType, "-- Chọn loại --", new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.PersonnelType, "", new { @class = "text-danger" })
+                    </div>
 
-                <div class="text-center mt-4">
-                    <input type="submit" value="Lưu thay đổi" class="btn btn-warning btn-lg" />
-                    <a href="@Url.Action("History", new { date = Model.Date })" class="btn btn-secondary ml-2">Quay lại lịch sử</a>
-                </div>
-            }
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Quantity, "Số lượng (phần)")
+                        @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control", type = "number", min = "1" } })
+                        @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Price, "Tổng tiền (VNĐ)")
+                        @Html.TextBoxFor(model => model.Price, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <input type="submit" value="Lưu thay đổi" class="btn btn-warning btn-lg" />
+                        <a href="@Url.Action("History", new { date = Model.Date })" class="btn btn-secondary ml-2">Quay lại lịch sử</a>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>

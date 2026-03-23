@@ -32,7 +32,7 @@
                 @if (isAdmin)
                 {
                     <!-- Dashboard -->
-                    @*<button class="nav-item @(currentController == "Dashboard" ? "active" : "")"
+                    <button class="nav-item @(currentController == "Dashboard" ? "active" : "")"
                             onclick="location.href='@Url.Action("Index", "Dashboard")'">
                         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="6" y1="20" x2="6" y2="10"></line>
@@ -40,7 +40,7 @@
                             <line x1="18" y1="20" x2="18" y2="14"></line>
                         </svg>
                         Dashboard
-                    </button>*@
+                    </button>
 
                     <!-- LeaderOrders -->
                     <button class="nav-item @(currentController == "LeaderOrders" ? "active" : "")"
@@ -172,18 +172,19 @@
         <main class="main-content">
             <!-- Header -->
             <header class="header">
-                @*<div class="header-left">
-                        <button class="mobile-menu-btn" id="mobileSidebarToggle">☰</button>
-                        <input type="text" class="search-input" placeholder="Search...">
-                    </div>*@
+                <div class="header-left">
+                        @*<button class="mobile-menu-btn" id="mobileSidebarToggle">☰</button>
+                        <input type="text" class="search-input" placeholder="Search...">*@
+                    <h3>📠 Canteen System</h3>
+                    </div>
                 <div class="header-right">
-                    @*<button class="notification-btn">
+                    <button class="notification-btn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                             </svg>
-                            <span class="notification-badge">3</span>
-                        </button>*@
+                            <span class="notification-badge">0</span>
+                        </button>
                     <div class="user-profile">
                         <img src="https://cdn-icons-png.freepik.com/512/17003/17003310.png" alt="User" class="user-avatar">
                         @if (User.Identity.IsAuthenticated)

@@ -1,50 +1,136 @@
-﻿@{
-    ViewBag.Title = "Login";
-    Layout = "~/Views/Shared/_Layout.cshtml"; // Tạo layout riêng cho login nếu muốn, hoặc dùng _Layout cũ
+﻿@model dynamic
+@{
+    ViewBag.Title = "Đăng nhập";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card mt-5">
-                <div class="card-header bg-primary text-white text-center">
-                    <h3><i class="fas fa-sign-in-alt"></i> Đăng nhập hệ thống báo cơm</h3>
+<style>
+    .login-wrapper {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); 
+        overflow: hidden;
+        width: 100%;
+        max-width: 420px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+        }
+
+    .login-header {
+        background: #4caf50; 
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
+    }
+
+        .login-header h3 {
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .login-header i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+    .login-body {
+        padding: 40px 30px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+        position: relative;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 12px 15px 12px 45px;
+        border: 1px solid #d0e2d0;
+        transition: all 0.3s ease;
+        background: #f9fff9; 
+    }
+
+        .form-control:focus {
+            border-color: #4caf50;
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+            background: white;
+        }
+
+    .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4caf50;
+        font-size: 1.2rem;
+    }
+
+    .btn-login {
+        background: #4caf50; 
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-login:hover {
+            background: #43a047;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+    .error-alert {
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-utensils fa-3x mb-3"></i>
+            <h3>Đăng nhập</h3>
+        </div>
+
+        <div class="login-body">
+            @using (Html.BeginForm("Login", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger error-alert alert alert-danger" })
+
+                <div class="form-group position-relative">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" name="username" class="form-control" required autofocus placeholder="Tên đăng nhập (VD: VI00)" />
                 </div>
-                <div class="card-body">
-                    @using (Html.BeginForm("Login", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal" }))
-                    {
-                        @Html.AntiForgeryToken()
-                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-                        <div class="form-group">
-                            <label class="control-label col-md-3">Tên đăng nhập</label>
-                            <div class="col-md-9">
-                                <input type="text" name="username" class="form-control" required autofocus placeholder="VD: VI00" />
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="control-label col-md-3">Mật khẩu</label>
-                            <div class="col-md-9">
-                                <input type="password" name="password" class="form-control" required placeholder="Nhập mật khẩu" />
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="col-md-offset-3 col-md-9">
-                                <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                                </button>
-                            </div>
-                        </div>
-
-                        if (ViewBag.Error != null)
-                        {
-                            <div class="alert alert-danger mt-3">@ViewBag.Error</div>
-                        }
-                    }
+                <div class="form-group position-relative">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" name="password" class="form-control" required placeholder="Mật khẩu" />
                 </div>
-            </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-login btn-block text-white">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Đăng nhập
+                    </button>
+                </div>
+            }
         </div>
     </div>
 </div>
