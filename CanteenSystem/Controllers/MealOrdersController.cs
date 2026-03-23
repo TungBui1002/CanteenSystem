@@ -1,8 +1,10 @@
 ﻿using CanteenSystem.Data;
 using CanteenSystem.Models;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
@@ -266,7 +268,7 @@ namespace CanteenSystem.Controllers
             ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName", mealOrder.MealId);
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-            ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
+            ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" }, mealOrder.Shift);
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
             ViewBag.TimeOptions = new Dictionary<string, List<string>>
             {
@@ -361,6 +363,88 @@ namespace CanteenSystem.Controllers
             }
 
             return RedirectToAction("History", new { date = date ?? DateTime.Today.Date });
+        }
+
+        // POST: MealOrders/ExportDailyMeal
+        [HttpPost]
+        [Authorize]
+        public ActionResult ExportDailyMeal(DateTime date)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return RedirectToAction("Login", "Account");
+
+            DateTime selectedDate = date.Date;
+
+            var orders = db.MealOrders
+                .Include(m => m.Department)
+                .Include(m => m.Meal)
+                .Include(m => m.Kitchen)
+                .Where(m => m.Date == selectedDate)
+                .OrderBy(m => m.Department.DepartmentCode)
+                .ToList();
+
+            if (!orders.Any())
+            {
+                TempData["Error"] = "Ngày này chưa có báo cơm nào!";
+                return RedirectToAction("History", new { date = selectedDate });
+            }
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Báo cáo ngày bộ phận");
+
+                // Header
+                worksheet.Cells[1, 1].Value = "STT";
+                worksheet.Cells[1, 2].Value = "Ngày";
+                worksheet.Cells[1, 3].Value = "Mã bộ phận";
+                worksheet.Cells[1, 4].Value = "Bộ phận";
+                worksheet.Cells[1, 5].Value = "Loại nhân sự";
+                worksheet.Cells[1, 6].Value = "Ca làm";
+                worksheet.Cells[1, 7].Value = "Giờ ăn";
+                worksheet.Cells[1, 8].Value = "Món ăn";
+                worksheet.Cells[1, 9].Value = "Nhà ăn";
+                worksheet.Cells[1, 10].Value = "Số lượng";
+                worksheet.Cells[1, 11].Value = "Tổng tiền (VNĐ)";
+                worksheet.Cells[1, 12].Value = "Người tạo";
+
+                int row = 2;
+                int stt = 1;
+                foreach (var item in orders)
+                {
+                    worksheet.Cells[row, 1].Value = stt++;
+                    worksheet.Cells[row, 2].Value = item.Date.ToString("dd/MM/yyyy");
+                    worksheet.Cells[row, 3].Value = item.Department.DepartmentCode;
+                    worksheet.Cells[row, 4].Value = item.Department?.DepartmentName ?? "Chưa gán";
+                    worksheet.Cells[row, 5].Value = item.PersonnelType;
+                    worksheet.Cells[row, 6].Value = item.Shift;
+                    worksheet.Cells[row, 7].Value = item.Time.ToString(@"hh\:mm") ?? "-";
+                    worksheet.Cells[row, 7].Style.Numberformat.Format = "hh:mm";
+                    worksheet.Cells[row, 8].Value = item.Meal?.MealName ?? "-";
+                    worksheet.Cells[row, 9].Value = item.Kitchen?.KitchenName ?? "-";
+                    worksheet.Cells[row, 10].Value = item.Quantity;
+                    worksheet.Cells[row, 11].Value = item.Price;
+                    worksheet.Cells[row, 12].Value = item.Creator;
+
+                    row++;
+                }
+
+                // Footer tổng cộng
+                worksheet.Cells[row, 1].Value = "Tổng cộng";
+                worksheet.Cells[row, 10].Value = orders.Sum(o => o.Quantity);
+                worksheet.Cells[row, 11].Value = orders.Sum(o => o.Price);
+
+                worksheet.Cells[row, 10, row, 11].Style.Font.Bold = true;
+                worksheet.Cells[1, 1, 1, 11].Style.Font.Bold = true;
+
+                worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                var stream = new MemoryStream();
+                package.SaveAs(stream);
+                stream.Position = 0;
+
+                string fileName = $"BaoCaoNgayBoPhan_{selectedDate:dd-MM-yyyy}.xlsx";
+                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
         }
 
         protected override void Dispose(bool disposing)

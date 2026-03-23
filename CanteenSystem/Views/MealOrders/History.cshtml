@@ -16,8 +16,16 @@
             </div>
             <div class="card-body">
                 <div class="row mb-4">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <input type="text" id="datePicker" class="form-control" value="@ViewBag.SelectedDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-1 text-right align-self-end">
+                        <form method="post" action="@Url.Action("ExportDailyMeal", "MealOrders")" style="display:inline;">
+                            @Html.Hidden("date", ((DateTime)ViewBag.SelectedDate).ToString("yyyy-MM-dd"))
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-file-excel"></i> Xuất Excel
+                            </button>
+                        </form>
                     </div>
                     <div class="col-md-8">
                         <form method="get" style="display:flex; gap:8px;">
