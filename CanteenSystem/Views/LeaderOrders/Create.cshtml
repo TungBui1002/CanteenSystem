@@ -63,7 +63,7 @@
                                         <td>@leader.FullName</td>
                                         <td>@(leader.Department?.DepartmentName ?? "Chưa gán")</td>
                                         <td>
-                                            @Html.DropDownList("mealIds[" + i + "]", new SelectList(meals, "MealId", "MealName"), "-- Chọn món --", new @*bỏ thì sẽ hiện cơm mặn đầu tiên*@
+                                            @Html.DropDownList("mealIds[" + i + "]", new SelectList(meals, "MealId", "MealName")@*, "-- Chọn món --"*@, new @*bỏ thì sẽ hiện cơm mặn đầu tiên*@
                                             {
                                                 @class = "form-control meal-select",
                                                 data_meal_name = ""

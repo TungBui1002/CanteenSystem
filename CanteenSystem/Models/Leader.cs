@@ -10,12 +10,13 @@ namespace CanteenSystem.Models
     {
         [Key]
         [Column("employee_id")]
+        [Display(Name = "Mã số thẻ")]
         [StringLength(20)]
         public string EmployeeId { get; set; }
 
         [StringLength(50)]
         [Column("cost_center")]
-        [Display(Name = "Cost Center")]
+        [Display(Name = "Trung tâm chịu phí")]
         public string CostCenter { get; set; }
 
         [Required]
