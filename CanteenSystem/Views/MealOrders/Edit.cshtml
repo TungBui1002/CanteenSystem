@@ -17,13 +17,16 @@
                     @Html.HiddenFor(model => model.OrderId)
                     @Html.HiddenFor(model => model.CreatedAt)
                     @Html.HiddenFor(model => model.Creator)
+                    @* Hidden field để giữ DepartmentId khi submit vì input readonly không gửi value *@
+                    @Html.HiddenFor(model => model.DepartmentId)
 
                     @Html.ValidationSummary(true, "Lỗi khi sửa:", new { @class = "alert alert-danger" })
 
+                    @* Bộ phận: readonly, không cho chỉnh sửa *@
                     <div class="form-group">
-                        @Html.LabelFor(model => model.DepartmentId, "Bộ phận")
-                        @Html.DropDownListFor(model => model.DepartmentId, (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control" })
-                        @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
+                        <label>Bộ phận</label>
+                        <input type="text" class="form-control" value="@ViewBag.DepartmentDisplay"
+                               readonly style="background-color:#e9ecef; cursor:not-allowed;" />
                     </div>
 
                     <div class="form-group">
@@ -40,7 +43,8 @@
 
                     <div class="form-group">
                         @Html.LabelFor(model => model.Time, "Thời gian ăn")
-                        @Html.DropDownListFor(model => model.Time, new SelectList(new[] { "" }), "-- Chọn giờ --", new { @class = "form-control time-select" })
+                        @* ViewBag.TimeSelect đã được build sẵn theo ca + giờ hiện tại của đơn hàng *@
+                        @Html.DropDownListFor(model => model.Time, (SelectList)ViewBag.TimeSelect, "-- Chọn giờ --", new { @class = "form-control time-select" })
                         @Html.ValidationMessageFor(model => model.Time, "", new { @class = "text-danger" })
                     </div>
 
@@ -88,25 +92,31 @@
 
     <script>
         $(document).ready(function () {
-            // Lấy dữ liệu TimeOptions từ ViewBag (đã encode toàn bộ dictionary)
             var timeOptions = @Html.Raw(Json.Encode(ViewBag.TimeOptions));
+            var currentTime = '@ViewBag.CurrentTime';
 
-            $('.shift-select').on('change', function () {
-                var shift = $(this).val();  // Lấy giá trị ca từ dropdown
-                var timeSelect = $(this).closest('.form-group').next('.form-group').find('.time-select');
-                timeSelect.empty();
-
-                // Lấy danh sách giờ tương ứng với ca
+            // Cập nhật danh sách giờ theo ca, giữ lại giờ đang chọn nếu còn hợp lệ
+            function updateTimeOptions(shift, selectedTime) {
+                var timeSelect = $('.time-select');
                 var times = timeOptions[shift] || [];
+                timeSelect.empty();
                 timeSelect.append('<option value="">-- Chọn giờ --</option>');
-                times.forEach(function(time) {
-                    timeSelect.append('<option value="' + time + '">' + time + '</option>');
+                $.each(times, function (i, time) {
+                    var opt = $('<option></option>').val(time).text(time);
+                    if (time === selectedTime) opt.prop('selected', true);
+                    timeSelect.append(opt);
                 });
+            }
+
+            // Khi người dùng đổi ca → reset giờ (không giữ giờ cũ vì ca đã thay đổi)
+            $('.shift-select').on('change', function () {
+                updateTimeOptions($(this).val(), '');
             });
 
-            // Trigger lần đầu (nếu có giá trị mặc định)
-            if (!$('.time-select').val()) {
-                $('.shift-select').trigger('change');
+            // Khi trang load: populate đúng danh sách giờ theo ca hiện tại và chọn đúng giờ đã lưu
+            var initialShift = $('.shift-select').val();
+            if (initialShift) {
+                updateTimeOptions(initialShift, currentTime);
             }
         });
     </script>

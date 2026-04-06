@@ -42,7 +42,7 @@ namespace CanteenSystem.Controllers
             ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode");
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName");
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName");
-            ViewBag.Shift = new SelectList(new[] {"Ca sáng", "Tăng ca", "Ca đêm" });
+            ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" });
             ViewBag.SelectedDate = DateTime.Today.Date;
             // Default Time cho từng ca (dùng JS để lọc)
@@ -270,12 +270,27 @@ namespace CanteenSystem.Controllers
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
             ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" }, mealOrder.Shift);
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
-            ViewBag.TimeOptions = new Dictionary<string, List<string>>
+
+            var timeOptions = new Dictionary<string, List<string>>
             {
                 { "Ca sáng", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
                 { "Tăng ca", new List<string> { "16:30", "17:00", "20:00" } },
                 { "Ca đêm", new List<string> { "01:30" } }
             };
+            ViewBag.TimeOptions = timeOptions;
+
+            // Lấy danh sách giờ theo ca hiện tại để render sẵn trên view
+            string currentShift = mealOrder.Shift ?? "";
+            var currentTimeList = timeOptions.ContainsKey(currentShift)
+                ? timeOptions[currentShift]
+                : new List<string> { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" };
+            string currentTime = mealOrder.Time.ToString(@"hh\:mm");
+            ViewBag.TimeSelect = new SelectList(currentTimeList, currentTime);
+            ViewBag.CurrentTime = currentTime;
+
+            // Lấy tên bộ phận để hiển thị readonly
+            var dept = departments.FirstOrDefault(d => d.DepartmentId == mealOrder.DepartmentId);
+            ViewBag.DepartmentDisplay = dept != null ? $"{dept.DepartmentCode} - {dept.DepartmentName}" : "";
 
             return View(mealOrder);
         }
@@ -316,9 +331,26 @@ namespace CanteenSystem.Controllers
             ViewBag.DepartmentId = new SelectList(departments, "DepartmentId", "DepartmentCode", mealOrder.DepartmentId);
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName", mealOrder.MealId);
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
-            ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
+            ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" }, mealOrder.Shift);
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
-            ViewBag.Time = new SelectList(new[] { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" }, mealOrder.Time);
+
+            var timeOptions2 = new Dictionary<string, List<string>>
+            {
+                { "Ca sáng", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
+                { "Tăng ca", new List<string> { "16:30", "17:00", "20:00" } },
+                { "Ca đêm", new List<string> { "01:30" } }
+            };
+            ViewBag.TimeOptions = timeOptions2;
+            string currentShift2 = mealOrder.Shift ?? "";
+            var currentTimeList2 = timeOptions2.ContainsKey(currentShift2)
+                ? timeOptions2[currentShift2]
+                : new List<string> { "06:00", "10:00", "11:30", "12:00", "16:30", "17:00", "20:00", "01:30" };
+            string currentTime2 = mealOrder.Time.ToString(@"hh\:mm");
+            ViewBag.TimeSelect = new SelectList(currentTimeList2, currentTime2);
+            ViewBag.CurrentTime = currentTime2;
+
+            var dept2 = departments.FirstOrDefault(d => d.DepartmentId == mealOrder.DepartmentId);
+            ViewBag.DepartmentDisplay = dept2 != null ? $"{dept2.DepartmentCode} - {dept2.DepartmentName}" : "";
 
             return View(mealOrder);
         }
