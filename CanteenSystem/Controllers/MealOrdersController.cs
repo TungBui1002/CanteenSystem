@@ -95,54 +95,73 @@ namespace CanteenSystem.Controllers
         public ActionResult Create(string[] DepartmentId, string[] Shift, string[] Time, string[] MealId,
                                    string[] KitchenId, string[] PersonnelType, int[] Quantity)
         {
-            if (!User.Identity.IsAuthenticated)
-                return RedirectToAction("Login", "Account");
-
-            var departments = GetAccessibleDepartments();
-            var role = Session["Role"]?.ToString();
-
-            if (DepartmentId == null || DepartmentId.Length == 0)
+            try
             {
-                TempData["Error"] = "Vui lòng thêm ít nhất một suất ăn!";
-                return RedirectToAction("Create");
-            }
-
-            for (int i = 0; i < DepartmentId.Length; i++)
-            {
-                if (string.IsNullOrEmpty(DepartmentId[i]) || string.IsNullOrEmpty(MealId[i]))
-                    continue;
-
-                var mealOrder = new MealOrder
+                if (!User.Identity.IsAuthenticated)
                 {
-                    DepartmentId = int.Parse(DepartmentId[i]),
-                    Date = DateTime.Today,
-                    Shift = Shift[i],
-                    Time = TimeSpan.Parse(Time[i]),
-                    MealId = int.Parse(MealId[i]),
-                    KitchenId = int.Parse(KitchenId[i]),
-                    PersonnelType = PersonnelType[i],
-                    Quantity = Quantity[i],
-                    CreatedAt = DateTime.Now,
-                    Creator = User.Identity.Name ?? "Admin"
-                };
+                    TempData["Error"] = "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.";
+                    return RedirectToAction("Login", "Account", new { returnUrl = Request.Url.PathAndQuery });
+                }
 
-                // Tính giá
-                var meal = db.Meals.Find(mealOrder.MealId);
-                if (meal != null)
-                    mealOrder.Price = meal.Price * mealOrder.Quantity;
+                var departments = GetAccessibleDepartments();
+                var role = Session["Role"]?.ToString();
 
-                // Kiểm tra quyền
-                if (!role.Equals("Admin", StringComparison.OrdinalIgnoreCase) &&
-                    !departments.Any(d => d.DepartmentId == mealOrder.DepartmentId))
+                if (string.IsNullOrEmpty(role))
                 {
+                    TempData["Error"] = "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.";
+                    return RedirectToAction("Login", "Account", new { returnUrl = Request.Url.PathAndQuery });
+                }
+
+                if (DepartmentId == null || DepartmentId.Length == 0)
+                {
+                    TempData["Error"] = "Vui lòng thêm ít nhất một suất ăn!";
                     return RedirectToAction("Create");
                 }
 
-                db.MealOrders.Add(mealOrder);
-            }
+                for (int i = 0; i < DepartmentId.Length; i++)
+                {
+                    if (string.IsNullOrEmpty(DepartmentId[i]) || string.IsNullOrEmpty(MealId[i]))
+                        continue;
 
-            db.SaveChanges();
-            return RedirectToAction("History", new { date = DateTime.Today });
+                    var mealOrder = new MealOrder
+                    {
+                        DepartmentId = int.Parse(DepartmentId[i]),
+                        Date = DateTime.Today,
+                        Shift = Shift[i],
+                        Time = TimeSpan.Parse(Time[i]),
+                        MealId = int.Parse(MealId[i]),
+                        KitchenId = int.Parse(KitchenId[i]),
+                        PersonnelType = PersonnelType[i],
+                        Quantity = Quantity[i],
+                        CreatedAt = DateTime.Now,
+                        Creator = User.Identity.Name ?? "Admin"
+                    };
+
+                    // Tính giá
+                    var meal = db.Meals.Find(mealOrder.MealId);
+                    if (meal != null)
+                        mealOrder.Price = meal.Price * mealOrder.Quantity;
+
+                    // Kiểm tra quyền
+                    if (!role.Equals("Admin", StringComparison.OrdinalIgnoreCase) &&
+                        !departments.Any(d => d.DepartmentId == mealOrder.DepartmentId))
+                    {
+                        TempData["Error"] = "Bạn không có quyền báo cơm cho bộ phận này.";
+                        return RedirectToAction("Create");
+                    }
+
+                    db.MealOrders.Add(mealOrder);
+                }
+
+                db.SaveChanges();
+                TempData["Success"] = "Báo cơm thành công!";
+                return RedirectToAction("History", new { date = DateTime.Today });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Có lỗi xảy ra. Vui lòng đăng nhập lại và thử lại.";
+                return RedirectToAction("Login", "Account", new { returnUrl = Request.Url.PathAndQuery });
+            }
         }
 
         // GET: MealOrders/History

@@ -97,32 +97,32 @@
                                 <div class="form-grid">
                                     <div>
                                         @Html.Label("DepartmentId_0", "Bộ phận")
-                                        @Html.DropDownList("DepartmentId[0]", (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control" })
+                                        @Html.DropDownList("DepartmentId[0]", (SelectList)ViewBag.DepartmentId, "-- Chọn bộ phận --", new { @class = "form-control", required = "required" })
                                     </div>
 
                                     <div>
                                         @Html.Label("Shift_0", "Ca làm việc")
-                                        @Html.DropDownList("Shift[0]", (SelectList)ViewBag.Shift, "-- Chọn ca --", new { @class = "form-control shift-select" })
+                                        @Html.DropDownList("Shift[0]", (SelectList)ViewBag.Shift, "-- Chọn ca --", new { @class = "form-control shift-select", required = "required" })
                                     </div>
 
                                     <div>
                                         @Html.Label("Time_0", "Thời gian ăn")
-                                        @Html.DropDownList("Time[0]", new SelectList(new string[0]), "-- Chọn giờ --", new { @class = "form-control time-select" })
+                                        @Html.DropDownList("Time[0]", new SelectList(new string[0]), "-- Chọn giờ --", new { @class = "form-control time-select", required = "required" })
                                     </div>
 
                                     <div>
                                         @Html.Label("MealId_0", "Món ăn")
-                                        @Html.DropDownList("MealId[0]", (SelectList)ViewBag.MealId, "-- Chọn món --", new { @class = "form-control" })
+                                        @Html.DropDownList("MealId[0]", (SelectList)ViewBag.MealId, "-- Chọn món --", new { @class = "form-control", required = "required" })
                                     </div>
 
                                     <div>
                                         @Html.Label("KitchenId_0", "Nhà ăn")
-                                        @Html.DropDownList("KitchenId[0]", (SelectList)ViewBag.KitchenId, "-- Chọn nhà ăn --", new { @class = "form-control" })
+                                        @Html.DropDownList("KitchenId[0]", (SelectList)ViewBag.KitchenId, "-- Chọn nhà ăn --", new { @class = "form-control", required = "required" })
                                     </div>
 
                                     <div>
                                         @Html.Label("PersonnelType_0", "Loại nhân sự")
-                                        @Html.DropDownList("PersonnelType[0]", (SelectList)ViewBag.PersonnelType, "-- Chọn loại --", new { @class = "form-control" })
+                                        @Html.DropDownList("PersonnelType[0]", (SelectList)ViewBag.PersonnelType, "-- Chọn loại --", new { @class = "form-control", required = "required" })
                                     </div>
 
                                     <div>
