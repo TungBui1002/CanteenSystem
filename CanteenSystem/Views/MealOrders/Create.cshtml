@@ -79,6 +79,24 @@
                     <div style="flex:1">
                         <h4 class="mb-0">Đặt cơm bộ phận - @ViewBag.SelectedDate.ToString("dd/MM/yyyy")</h4>
                     </div>
+                    @if (ViewBag.IsAdmin == true)
+                    {
+                        <div style="width: 220px;">
+                            @using (Html.BeginForm("Create", "MealOrders", FormMethod.Get))
+                            {
+                                <div class="input-group">
+                                    <input type="date" name="selectedDate"
+                                           value="@ViewBag.SelectedDate.ToString("yyyy-MM-dd")"
+                                           class="form-control" style="height: 42px;" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-light" type="submit">
+                                            <i class="fas fa-calendar-alt">chọn</i>
+                                        </button>
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    }
                     <a href="@Url.Action("History")" class="btn btn-light">
                         <i class="fas fa-history"></i>Xem Lịch sử
                     </a>
@@ -88,6 +106,7 @@
                     @using (Html.BeginForm("Create", "MealOrders", FormMethod.Post))
                     {
                         @Html.AntiForgeryToken()
+                        <input type="hidden" name="ReportDate" value="@ViewBag.SelectedDate.ToString("yyyy-MM-dd")" />
 
                         <div id="meal-rows">
                             <!-- Dòng đầu tiên -->

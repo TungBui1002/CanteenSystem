@@ -28,11 +28,24 @@ namespace CanteenSystem.Controllers
         }
 
         // GET: MealOrders/Create
-        public ActionResult Create()
+        public ActionResult Create(DateTime? selectedDate)
         {
             if (!User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Login", "Account");
+            }
+
+            DateTime reportDate;
+
+            string role = Session["Role"]?.ToString();
+
+            if (role == "Admin" && selectedDate.HasValue)
+            {
+                reportDate = selectedDate.Value.Date;   // Admin được chọn ngày
+            }
+            else
+            {
+                reportDate = DateTime.Today.Date;       // User + Admin mặc định là hôm nay
             }
 
             var departments = GetAccessibleDepartments();
@@ -44,13 +57,16 @@ namespace CanteenSystem.Controllers
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName");
             ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
             ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" });
-            ViewBag.SelectedDate = DateTime.Today.Date;
+
+            ViewBag.SelectedDate = reportDate;
+            ViewBag.IsAdmin = (role == "Admin");
+
             // Default Time cho từng ca (dùng JS để lọc)
             ViewBag.TimeOptions = new Dictionary<string, List<string>>
             {
                 { "Ca sáng", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
                 { "Tăng ca", new List<string> { "16:30", "17:00", "20:00" } },
-                { "Ca đêm", new List<string> { "01:30" } }
+                { "Ca đêm", new List<string> { "20:00", "01:30" } }
             };
 
             ViewBag.MealOptions = new Dictionary<string, Dictionary<string, List<string>>>
@@ -68,13 +84,13 @@ namespace CanteenSystem.Controllers
                     "Tăng ca", new Dictionary<string, List<string>>
                     {
                         { "16:30", new List<string> { "Cơm mặn", "Cơm chay", "Phở" } },
-                        { "17:00", new List<string> { "Cơm mặn", "Cơm chay", "Phở" } },
-                        { "20:00", new List<string> { "Cơm mặn", "Cơm chay", "Phở" } }
+                        { "17:00", new List<string> { "Cơm mặn", "Cơm chay", "Phở" } }
                     }
                 },
                 {
                     "Ca đêm", new Dictionary<string, List<string>>
                     {
+                        { "20:00", new List<string> { "Mì" } },
                         { "01:30", new List<string> { "Cơm mặn", "Cơm chay", "Phở", "Mì" } }
                     }
                 }
@@ -82,7 +98,7 @@ namespace CanteenSystem.Controllers
 
             var model = new MealOrder
             {
-                Date = DateTime.Today.Date,
+                Date = reportDate,
                 Quantity = 1
             };
 
@@ -126,7 +142,7 @@ namespace CanteenSystem.Controllers
                     var mealOrder = new MealOrder
                     {
                         DepartmentId = int.Parse(DepartmentId[i]),
-                        Date = DateTime.Today,
+                        Date = DateTime.Parse(Request.Form["ReportDate"] ?? DateTime.Today.ToString("yyyy-MM-dd")),
                         Shift = Shift[i],
                         Time = TimeSpan.Parse(Time[i]),
                         MealId = int.Parse(MealId[i]),
@@ -293,8 +309,8 @@ namespace CanteenSystem.Controllers
             var timeOptions = new Dictionary<string, List<string>>
             {
                 { "Ca sáng", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
-                { "Tăng ca", new List<string> { "16:30", "17:00", "20:00" } },
-                { "Ca đêm", new List<string> { "01:30" } }
+                { "Tăng ca", new List<string> { "16:30", "17:00" } },
+                { "Ca đêm", new List<string> { "20:00", "01:30" } }
             };
             ViewBag.TimeOptions = timeOptions;
 
@@ -356,8 +372,8 @@ namespace CanteenSystem.Controllers
             var timeOptions2 = new Dictionary<string, List<string>>
             {
                 { "Ca sáng", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
-                { "Tăng ca", new List<string> { "16:30", "17:00", "20:00" } },
-                { "Ca đêm", new List<string> { "01:30" } }
+                { "Tăng ca", new List<string> { "16:30", "17:00" } },
+                { "Ca đêm", new List<string> { "20:00", "01:30" } }
             };
             ViewBag.TimeOptions = timeOptions2;
             string currentShift2 = mealOrder.Shift ?? "";
