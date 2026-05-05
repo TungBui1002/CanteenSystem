@@ -434,7 +434,6 @@ namespace CanteenSystem.Controllers
 
         // POST: MealOrders/ExportDailyMeal
         [HttpPost]
-        [Authorize]
         public ActionResult ExportDailyMeal(DateTime date)
         {
             if (!User.Identity.IsAuthenticated)
@@ -442,12 +441,31 @@ namespace CanteenSystem.Controllers
 
             DateTime selectedDate = date.Date;
 
-            var orders = db.MealOrders
+            string role = Session["Role"]?.ToString();
+            var accessibleDepts = GetAccessibleDepartments();
+
+            // Query chính
+            var query = db.MealOrders
                 .Include(m => m.Department)
                 .Include(m => m.Meal)
                 .Include(m => m.Kitchen)
-                .Where(m => m.Date == selectedDate)
-                .OrderBy(m => m.Department.DepartmentCode)
+                .Where(m => DbFunctions.TruncateTime(m.Date) == selectedDate);
+
+            // Áp dụng phân quyền
+            if (!role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                if (accessibleDepts == null || !accessibleDepts.Any())
+                {
+                    TempData["Error"] = "Bạn không có quyền xuất báo cáo cho bất kỳ bộ phận nào.";
+                    return RedirectToAction("History", new { date = selectedDate });
+                }
+
+                var deptIds = accessibleDepts.Select(d => d.DepartmentId);
+                query = query.Where(m => deptIds.Contains(m.DepartmentId));
+            }
+
+            var orders = query
+                .OrderBy(m => m.Department == null ? string.Empty : m.Department.DepartmentCode)
                 .ToList();
 
             if (!orders.Any())
@@ -476,11 +494,12 @@ namespace CanteenSystem.Controllers
 
                 int row = 2;
                 int stt = 1;
+
                 foreach (var item in orders)
                 {
                     worksheet.Cells[row, 1].Value = stt++;
                     worksheet.Cells[row, 2].Value = item.Date.ToString("dd/MM/yyyy");
-                    worksheet.Cells[row, 3].Value = item.Department.DepartmentCode;
+                    worksheet.Cells[row, 3].Value = item.Department?.DepartmentCode;
                     worksheet.Cells[row, 4].Value = item.Department?.DepartmentName ?? "Chưa gán";
                     worksheet.Cells[row, 5].Value = item.PersonnelType;
                     worksheet.Cells[row, 6].Value = item.Shift;
@@ -501,7 +520,7 @@ namespace CanteenSystem.Controllers
                 worksheet.Cells[row, 11].Value = orders.Sum(o => o.Price);
 
                 worksheet.Cells[row, 10, row, 11].Style.Font.Bold = true;
-                worksheet.Cells[1, 1, 1, 11].Style.Font.Bold = true;
+                worksheet.Cells[1, 1, 1, 12].Style.Font.Bold = true;
 
                 worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
 
