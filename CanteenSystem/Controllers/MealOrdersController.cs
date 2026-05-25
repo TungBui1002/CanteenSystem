@@ -56,7 +56,7 @@ namespace CanteenSystem.Controllers
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName");
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName");
             ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
-            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" });
+            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", "Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" });
 
             ViewBag.SelectedDate = reportDate;
             ViewBag.IsAdmin = (role == "Admin");
@@ -65,7 +65,7 @@ namespace CanteenSystem.Controllers
             ViewBag.TimeOptions = new Dictionary<string, List<string>>
             {
                 { "Ca sáng", new List<string> { "06:00", "10:00", "11:30", "12:00" } },
-                { "Tăng ca", new List<string> { "16:30", "17:00", "20:00" } },
+                { "Tăng ca", new List<string> { "16:30", "17:00" } },
                 { "Ca đêm", new List<string> { "20:00", "01:30" } }
             };
 

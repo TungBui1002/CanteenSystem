@@ -56,8 +56,8 @@
                                 <th rowspan="2">Dept Name</th>
                                 <th rowspan="2">Type</th>
                                 <th colspan="4">Day Shift</th>
-                                <th colspan="3">Overtime Shift</th>
-                                <th colspan="1">Night Shift</th>
+                                <th colspan="2">Overtime Shift</th>
+                                <th colspan="2">Night Shift</th>
                                 <th rowspan="2">Total Portions</th>
                                 <th rowspan="2">Total Cost (VND)</th>
                             </tr>
@@ -69,8 +69,8 @@
                                 @*<th>Total Day</th>*@
                                 <th>16:30</th>
                                 <th>17:00</th>
-                                <th>20:00</th>
                                 @*<th>Total Overtime</th>*@
+                                <th>20:00</th>
                                 <th>01:30</th>
                                 @*<th>Total Night</th>*@
                             </tr>
@@ -89,17 +89,21 @@
                                     <td>@item.DepartmentCode</td>
                                     <td>@item.DepartmentName</td>
                                     <td>@item.PersonnelType</td>
+
+                                    <!-- Day Shift -->
                                     <td>@(item.DayHours.ContainsKey("06:00") ? item.DayHours["06:00"] : 0)</td>
                                     <td>@(item.DayHours.ContainsKey("10:00") ? item.DayHours["10:00"] : 0)</td>
                                     <td>@(item.DayHours.ContainsKey("11:30") ? item.DayHours["11:30"] : 0)</td>
                                     <td>@(item.DayHours.ContainsKey("12:00") ? item.DayHours["12:00"] : 0)</td>
-                                    @*<td>@item.DayTotal</td>*@
+
+                                    <!-- Overtime Shift -->
                                     <td>@(item.OvertimeHours.ContainsKey("16:30") ? item.OvertimeHours["16:30"] : 0)</td>
                                     <td>@(item.OvertimeHours.ContainsKey("17:00") ? item.OvertimeHours["17:00"] : 0)</td>
-                                    <td>@(item.OvertimeHours.ContainsKey("20:00") ? item.OvertimeHours["20:00"] : 0)</td>
-                                    @*<td>@item.OvertimeTotal</td>*@
+
+                                    <!-- Night Shift -->
+                                    <td>@(item.NightHours.ContainsKey("20:00") ? item.NightHours["20:00"] : 0)</td>
                                     <td>@(item.NightHours.ContainsKey("01:30") ? item.NightHours["01:30"] : 0)</td>
-                                    @*<td>@item.NightTotal</td>*@
+
                                     <td>@item.TotalPortions</td>
                                     <td>@item.TotalCost.ToString("N0")</td>
                                 </tr>
@@ -116,8 +120,8 @@
                                 @*<td>@ViewBag.TotalDay</td>*@
                                 <td>@ViewBag.TotalOvertime1630</td>
                                 <td>@ViewBag.TotalOvertime17</td>
-                                <td>@ViewBag.TotalOvertime20</td>
                                 @*<td>@ViewBag.TotalOvertime</td>*@
+                                <td>@ViewBag.TotalOvertime20</td>
                                 <td>@ViewBag.TotalNight0130</td>
                                 @*<td>@ViewBag.TotalNight</td>*@
                                 <td>@ViewBag.GrandTotalPortions</td>

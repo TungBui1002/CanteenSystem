@@ -290,32 +290,28 @@ namespace CanteenSystem.Controllers
 
                     foreach (var m in g)
                     {
-                        string time = m.Time.ToString(@"hh\:mm");
+                        string timeStr = m.Time.ToString(@"hh\:mm");
 
-                        if (m.Shift == "Ca sáng")
+                        // === LOGIC THEO YÊU CẦU MỚI ===
+                        if (timeStr == "06:00" || timeStr == "10:00" || timeStr == "11:30" || timeStr == "12:00")
                         {
-                            if (!item.DayHours.ContainsKey(time))
-                                item.DayHours[time] = 0;
-
-                            item.DayHours[time] += m.Quantity;
+                            // Ca sáng
+                            if (!item.DayHours.ContainsKey(timeStr)) item.DayHours[timeStr] = 0;
+                            item.DayHours[timeStr] += m.Quantity;
                             item.DayTotal += m.Quantity;
                         }
-
-                        else if (m.Shift == "Tăng ca")
+                        else if (timeStr == "16:30" || timeStr == "17:00")
                         {
-                            if (!item.OvertimeHours.ContainsKey(time))
-                                item.OvertimeHours[time] = 0;
-
-                            item.OvertimeHours[time] += m.Quantity;
+                            // Tăng ca
+                            if (!item.OvertimeHours.ContainsKey(timeStr)) item.OvertimeHours[timeStr] = 0;
+                            item.OvertimeHours[timeStr] += m.Quantity;
                             item.OvertimeTotal += m.Quantity;
                         }
-
-                        else if (m.Shift == "Ca đêm")
+                        else if (timeStr == "20:00" || timeStr == "01:30")
                         {
-                            if (!item.NightHours.ContainsKey(time))
-                                item.NightHours[time] = 0;
-
-                            item.NightHours[time] += m.Quantity;
+                            // Ca đêm
+                            if (!item.NightHours.ContainsKey(timeStr)) item.NightHours[timeStr] = 0;
+                            item.NightHours[timeStr] += m.Quantity;
                             item.NightTotal += m.Quantity;
                         }
 
@@ -329,21 +325,16 @@ namespace CanteenSystem.Controllers
                 .ThenBy(x => x.PersonnelType)
                 .ToList();
 
+            // Đảm bảo tất cả giờ đều có key (hiển thị 0 nếu không có dữ liệu)
             string[] dayTimes = { "06:00", "10:00", "11:30", "12:00" };
-            string[] overtimeTimes = { "16:30", "17:00", "20:00" };
+            string[] overtimeTimes = { "16:30", "17:00" };
+            string[] nightTimes = { "20:00", "01:30" };
 
             foreach (var r in report)
             {
-                foreach (var t in dayTimes)
-                    if (!r.DayHours.ContainsKey(t))
-                        r.DayHours[t] = 0;
-
-                foreach (var t in overtimeTimes)
-                    if (!r.OvertimeHours.ContainsKey(t))
-                        r.OvertimeHours[t] = 0;
-
-                if (!r.NightHours.ContainsKey("01:30"))
-                    r.NightHours["01:30"] = 0;
+                foreach (var t in dayTimes) if (!r.DayHours.ContainsKey(t)) r.DayHours[t] = 0;
+                foreach (var t in overtimeTimes) if (!r.OvertimeHours.ContainsKey(t)) r.OvertimeHours[t] = 0;
+                foreach (var t in nightTimes) if (!r.NightHours.ContainsKey(t)) r.NightHours[t] = 0;
             }
 
             return report;
@@ -397,8 +388,8 @@ namespace CanteenSystem.Controllers
 
             ws.Cells[row, 12].Value = "16:30";
             ws.Cells[row, 13].Value = "17:00";
-            ws.Cells[row, 14].Value = "20:00";
 
+            ws.Cells[row, 14].Value = "20:00";
             ws.Cells[row, 15].Value = "01:30";
 
             // STYLE HEADER
@@ -431,8 +422,8 @@ namespace CanteenSystem.Controllers
 
                 ws.Cells[row, 12].Value = item.OvertimeHours.ContainsKey("16:30") ? item.OvertimeHours["16:30"] : 0;
                 ws.Cells[row, 13].Value = item.OvertimeHours.ContainsKey("17:00") ? item.OvertimeHours["17:00"] : 0;
-                ws.Cells[row, 14].Value = item.OvertimeHours.ContainsKey("20:00") ? item.OvertimeHours["20:00"] : 0;
 
+                ws.Cells[row, 14].Value = item.NightHours.ContainsKey("20:00") ? item.NightHours["20:00"] : 0;
                 ws.Cells[row, 15].Value = item.NightHours.ContainsKey("01:30") ? item.NightHours["01:30"] : 0;
 
                 ws.Cells[row, 17].Value = item.TotalPortions;
