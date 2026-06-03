@@ -37,7 +37,6 @@ namespace CanteenSystem.Controllers
             string role = Session["Role"]?.ToString();
             if (string.IsNullOrEmpty(role) || role != "Admin")
             {
-                // Không phải Admin → redirect về Login
                 return RedirectToAction("Login", "Account");
             }
 
@@ -46,7 +45,7 @@ namespace CanteenSystem.Controllers
 
             var orders = db.LeaderOrders
                 .Include(o => o.Meal)
-                .Include(o => o.Leader.Department)
+                .Include(o => o.Leader)
                 .Where(o => o.Date >= start && o.Date <= end)
                 .ToList();
 
@@ -56,9 +55,16 @@ namespace CanteenSystem.Controllers
                 {
                     var first = g.First();
 
-                    int manCount = g.Count(o => o.Meal.MealName.Contains("mặn") && o.Status == "Đặt");
-                    int chayCount = g.Count(o => o.Meal.MealName.Contains("chay") && o.Status == "Đặt");
-                    decimal totalPrice = g.Where(o => o.Status == "Đặt").Sum(o => o.Price);
+                    int manCount = g.Where(o => o.Status == "Đặt" && o.Meal?.MealName.Contains("mặn") == true)
+                                   .Sum(o => o.Quantity);
+
+                    int chayCount = g.Where(o => o.Status == "Đặt" && o.Meal?.MealName.Contains("chay") == true)
+                                    .Sum(o => o.Quantity);
+
+                    // Chỉ tính những record đã "Đặt"
+                    int totalPortions = g.Where(o => o.Status == "Đặt").Sum(o => o.Quantity);
+                    // Tổng tiền = Đơn giá × Số lượng (chỉ record đã Đặt)
+                    decimal totalCost = g.Where(o => o.Status == "Đặt").Sum(o => o.Price * o.Quantity);
 
                     return new LeaderMonthlyReportViewModel
                     {
@@ -66,10 +72,13 @@ namespace CanteenSystem.Controllers
                         FullName = first.Leader.FullName,
                         DepartmentName = first.Leader.Department?.DepartmentName ?? "Chưa gán",
                         CostCenter = first.Leader.CostCenter,
+                        Category = first.Leader.Category ?? "-",
+                        UnitPrice = first.Price,  // Lấy đơn giá thực từ DB
+
                         ManCount = manCount,
                         ChayCount = chayCount,
-                        TotalPortions = manCount + chayCount,
-                        TotalCost = totalPrice
+                        TotalPortions = totalPortions,
+                        TotalCost = totalCost
                     };
                 })
                 .OrderBy(x => x.EmployeeId)
@@ -85,17 +94,16 @@ namespace CanteenSystem.Controllers
             return View(report);
         }
 
-        // POST: Reports/LeaderMonthlyExport
+        // POST: Reports/LeaderMonthly (hỗ trợ cả Xem và Export)
         [HttpPost]
         public ActionResult LeaderMonthly(DateTime fromDate, DateTime toDate, string submitType)
         {
             DateTime start = fromDate.Date;
             DateTime end = toDate.Date;
 
-            // Logic lấy report (giữ nguyên như cũ)
             var orders = db.LeaderOrders
                 .Include(o => o.Meal)
-                .Include(o => o.Leader.Department)
+                .Include(o => o.Leader)
                 .Where(o => o.Date >= start && o.Date <= end)
                 .ToList();
 
@@ -105,9 +113,16 @@ namespace CanteenSystem.Controllers
                 {
                     var first = g.First();
 
-                    int manCount = g.Count(o => o.Meal.MealName.Contains("mặn") && o.Status == "Đặt");
-                    int chayCount = g.Count(o => o.Meal.MealName.Contains("chay") && o.Status == "Đặt");
-                    decimal totalPrice = g.Where(o => o.Status == "Đặt").Sum(o => o.Price);
+                    int manCount = g.Where(o => o.Status == "Đặt" && o.Meal?.MealName.Contains("mặn") == true)
+                                   .Sum(o => o.Quantity);
+
+                    int chayCount = g.Where(o => o.Status == "Đặt" && o.Meal?.MealName.Contains("chay") == true)
+                                    .Sum(o => o.Quantity);
+
+                    // Chỉ tính những record đã "Đặt"
+                    int totalPortions = g.Where(o => o.Status == "Đặt").Sum(o => o.Quantity);
+                    // Tổng tiền = Đơn giá × Số lượng (chỉ record đã Đặt)
+                    decimal totalCost = g.Where(o => o.Status == "Đặt").Sum(o => o.Price * o.Quantity);
 
                     return new LeaderMonthlyReportViewModel
                     {
@@ -115,10 +130,13 @@ namespace CanteenSystem.Controllers
                         FullName = first.Leader.FullName,
                         DepartmentName = first.Leader.Department?.DepartmentName ?? "Chưa gán",
                         CostCenter = first.Leader.CostCenter,
+                        Category = first.Leader.Category ?? "-",
+                        UnitPrice = first.Price,  // Lấy đơn giá thực từ DB
+
                         ManCount = manCount,
                         ChayCount = chayCount,
-                        TotalPortions = manCount + chayCount,
-                        TotalCost = totalPrice
+                        TotalPortions = totalPortions,
+                        TotalCost = totalCost
                     };
                 })
                 .OrderBy(x => x.EmployeeId)
@@ -131,47 +149,47 @@ namespace CanteenSystem.Controllers
             ViewBag.GrandTotalPortions = report.Sum(r => r.TotalPortions);
             ViewBag.GrandTotalCost = report.Sum(r => r.TotalCost);
 
-            // Kiểm tra nút nào được bấm
             if (submitType == "export")
             {
-                // Logic xuất Excel (copy phần bạn có)
                 using (var package = new ExcelPackage())
                 {
                     var worksheet = package.Workbook.Worksheets.Add("Báo cáo tháng cán bộ");
 
-                    // Header
                     worksheet.Cells[1, 1].Value = "STT";
                     worksheet.Cells[1, 2].Value = "TT Chi phí";
                     worksheet.Cells[1, 3].Value = "Mã cán bộ";
                     worksheet.Cells[1, 4].Value = "Họ tên";
                     worksheet.Cells[1, 5].Value = "Bộ phận";
-                    worksheet.Cells[1, 6].Value = "Cơm mặn (phần)";
-                    worksheet.Cells[1, 7].Value = "Cơm chay (phần)";
-                    worksheet.Cells[1, 8].Value = "Tổng phần";
-                    worksheet.Cells[1, 9].Value = "Tổng tiền (VNĐ)";
+                    worksheet.Cells[1, 6].Value = "Phân loại";
+                    worksheet.Cells[1, 7].Value = "Đơn giá";
+                    worksheet.Cells[1, 8].Value = "Cơm mặn (phần)";
+                    worksheet.Cells[1, 9].Value = "Cơm chay (phần)";
+                    worksheet.Cells[1, 10].Value = "Tổng phần";
+                    worksheet.Cells[1, 11].Value = "Tổng tiền (VNĐ)";
 
                     int row = 2;
                     int stt = 1;
                     foreach (var item in report)
                     {
                         worksheet.Cells[row, 1].Value = stt++;
-                        worksheet.Cells[row, 2].Value = item.CostCenter;  // TT Chi phí
+                        worksheet.Cells[row, 2].Value = item.CostCenter;
                         worksheet.Cells[row, 3].Value = item.EmployeeId;
                         worksheet.Cells[row, 4].Value = item.FullName;
                         worksheet.Cells[row, 5].Value = item.DepartmentName;
-                        worksheet.Cells[row, 6].Value = item.ManCount;
-                        worksheet.Cells[row, 7].Value = item.ChayCount;
-                        worksheet.Cells[row, 8].Value = item.TotalPortions;
-                        worksheet.Cells[row, 9].Value = item.TotalCost;
+                        worksheet.Cells[row, 6].Value = item.Category;
+                        worksheet.Cells[row, 7].Value = item.UnitPrice;
+                        worksheet.Cells[row, 8].Value = item.ManCount;
+                        worksheet.Cells[row, 9].Value = item.ChayCount;
+                        worksheet.Cells[row, 10].Value = item.TotalPortions;
+                        worksheet.Cells[row, 11].Value = item.TotalCost;
                         row++;
                     }
 
-                    // Tổng cộng
                     worksheet.Cells[row, 1].Value = "Tổng cộng";
-                    worksheet.Cells[row, 6].Value = ViewBag.TotalMan;
-                    worksheet.Cells[row, 7].Value = ViewBag.TotalChay;
-                    worksheet.Cells[row, 8].Value = ViewBag.GrandTotalPortions;
-                    worksheet.Cells[row, 9].Value = ViewBag.GrandTotalCost;
+                    worksheet.Cells[row, 8].Value = ViewBag.TotalMan;
+                    worksheet.Cells[row, 9].Value = ViewBag.TotalChay;
+                    worksheet.Cells[row, 10].Value = ViewBag.GrandTotalPortions;
+                    worksheet.Cells[row, 11].Value = ViewBag.GrandTotalCost;
 
                     worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
 
@@ -184,7 +202,6 @@ namespace CanteenSystem.Controllers
                 }
             }
 
-            // Nếu bấm "Xem báo cáo" → hiển thị view
             return View(report);
         }
 
@@ -357,10 +374,10 @@ namespace CanteenSystem.Controllers
 
             ws.Cells[row, 8].Value = "Day Shift";
             ws.Cells[row, 12].Value = "Overtime Shift";
-            ws.Cells[row, 15].Value = "Night Shift";
+            ws.Cells[row, 14].Value = "Night Shift";
 
-            ws.Cells[row, 17].Value = "Total Portions";
-            ws.Cells[row, 18].Value = "Total Cost (VND)";
+            ws.Cells[row, 16].Value = "Total Portions";
+            ws.Cells[row, 17].Value = "Total Cost (VND)";
 
             // MERGE
             ws.Cells[1, 1, 2, 1].Merge = true;
@@ -372,11 +389,11 @@ namespace CanteenSystem.Controllers
             ws.Cells[1, 7, 2, 7].Merge = true;
 
             ws.Cells[1, 8, 1, 11].Merge = true;
-            ws.Cells[1, 12, 1, 14].Merge = true;
-            ws.Cells[1, 15, 1, 15].Merge = true;
+            ws.Cells[1, 12, 1, 13].Merge = true;
+            ws.Cells[1, 14, 1, 15].Merge = true;
 
+            ws.Cells[1, 16, 2, 16].Merge = true;
             ws.Cells[1, 17, 2, 17].Merge = true;
-            ws.Cells[1, 18, 2, 18].Merge = true;
 
             // HEADER DÒNG 2
             row = 2;
@@ -393,7 +410,7 @@ namespace CanteenSystem.Controllers
             ws.Cells[row, 15].Value = "01:30";
 
             // STYLE HEADER
-            using (var range = ws.Cells[1, 1, 2, 18])
+            using (var range = ws.Cells[1, 1, 2, 17])
             {
                 range.Style.Font.Bold = true;
                 range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
@@ -426,10 +443,10 @@ namespace CanteenSystem.Controllers
                 ws.Cells[row, 14].Value = item.NightHours.ContainsKey("20:00") ? item.NightHours["20:00"] : 0;
                 ws.Cells[row, 15].Value = item.NightHours.ContainsKey("01:30") ? item.NightHours["01:30"] : 0;
 
-                ws.Cells[row, 17].Value = item.TotalPortions;
-                ws.Cells[row, 18].Value = item.TotalCost;
+                ws.Cells[row, 16].Value = item.TotalPortions;
+                ws.Cells[row, 17].Value = item.TotalCost;
 
-                ws.Cells[row, 18].Style.Numberformat.Format = "#,##0";
+                ws.Cells[row, 17].Style.Numberformat.Format = "#,##0";
 
                 row++;
             }
@@ -438,12 +455,12 @@ namespace CanteenSystem.Controllers
             ws.Cells[row, 1].Value = "Tổng cộng";
             ws.Cells[row, 1, row, 7].Merge = true;
 
-            ws.Cells[row, 17].Value = report.Sum(x => x.TotalPortions);
-            ws.Cells[row, 18].Value = report.Sum(x => x.TotalCost);
+            ws.Cells[row, 16].Value = report.Sum(x => x.TotalPortions);
+            ws.Cells[row, 17].Value = report.Sum(x => x.TotalCost);
 
-            ws.Cells[row, 18].Style.Numberformat.Format = "#,##0";
+            ws.Cells[row, 17].Style.Numberformat.Format = "#,##0";
 
-            using (var range = ws.Cells[row, 1, row, 18])
+            using (var range = ws.Cells[row, 1, row, 17])
             {
                 range.Style.Font.Bold = true;
             }

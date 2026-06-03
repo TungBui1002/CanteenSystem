@@ -1,7 +1,7 @@
 ﻿@model CanteenSystem.Models.Leader
 
 @{
-    ViewBag.Title = "Create Leader";
+    ViewBag.Title = "Thêm cán bộ mới";
 }
 
 <div class="content">
@@ -20,13 +20,13 @@
 
                             <div class="form-group">
                                 @Html.LabelFor(model => model.EmployeeId, htmlAttributes: new { @class = "control-label" })
-                                @Html.EditorFor(model => model.EmployeeId, new { htmlAttributes = new { @class = "form-control", placeholder = "Mã cán bộ (ví dụ: NV001)" } })
+                                @Html.EditorFor(model => model.EmployeeId, new { htmlAttributes = new { @class = "form-control", placeholder = "Ví dụ: NV001" } })
                                 @Html.ValidationMessageFor(model => model.EmployeeId, "", new { @class = "text-danger" })
                             </div>
 
                             <div class="form-group">
                                 @Html.LabelFor(model => model.FullName, htmlAttributes: new { @class = "control-label" })
-                                @Html.EditorFor(model => model.FullName, new { htmlAttributes = new { @class = "form-control", placeholder = "Họ và tên" } })
+                                @Html.EditorFor(model => model.FullName, new { htmlAttributes = new { @class = "form-control", placeholder = "Họ và tên đầy đủ" } })
                                 @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
                             </div>
 
@@ -38,21 +38,34 @@
 
                             <div class="form-group">
                                 @Html.LabelFor(model => model.Rank, htmlAttributes: new { @class = "control-label" })
-                                @Html.EditorFor(model => model.Rank, new { htmlAttributes = new { @class = "form-control", placeholder = "Chức vụ (ví dụ: Trưởng phòng)" } })
+                                @Html.EditorFor(model => model.Rank, new { htmlAttributes = new { @class = "form-control", placeholder = "Chức vụ / Vị trí" } })
                                 @Html.ValidationMessageFor(model => model.Rank, "", new { @class = "text-danger" })
                             </div>
 
                             <div class="form-group">
                                 @Html.LabelFor(model => model.CostCenter, htmlAttributes: new { @class = "control-label" })
-                                @Html.EditorFor(model => model.CostCenter, new { htmlAttributes = new { @class = "form-control", placeholder = "Cost Center (nếu có)" } })
+                                @Html.EditorFor(model => model.CostCenter, new { htmlAttributes = new { @class = "form-control", placeholder = "TT Chi phí (nếu có)" } })
                                 @Html.ValidationMessageFor(model => model.CostCenter, "", new { @class = "text-danger" })
                             </div>
 
-                            <!-- Ẩn audit fields -->
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Category, "Phân loại", htmlAttributes: new { @class = "control-label" })
+                                @Html.DropDownList("Category", new SelectList(ViewBag.CategoryOptions), "-- Chọn phân loại --", new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.Category, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label>
+                                        @Html.CheckBoxFor(model => model.IsActive, new { @checked = "checked" })
+                                        Đang làm việc (Is Active)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Hidden fields -->
                             @Html.HiddenFor(model => model.CreatedAt)
-                            @Html.HiddenFor(model => model.UpdatedAt)
                             @Html.HiddenFor(model => model.Creator)
-                            @Html.HiddenFor(model => model.Modifier)
 
                             <div class="form-group mt-4">
                                 <input type="submit" value="Thêm cán bộ" class="btn btn-success" />
@@ -66,6 +79,6 @@
     </div>
 </div>
 
-    @section Scripts {
-        @Scripts.Render("~/bundles/jqueryval")
-    }
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -42,6 +42,8 @@
                                 <th>Mã cán bộ</th>
                                 <th>Họ tên</th>
                                 <th>Bộ phận</th>
+                                <th>Phân loại</th>
+                                <th>Đơn giá</th>
                                 <th>Cơm mặn (phần)</th>
                                 <th>Cơm chay (phần)</th>
                                 <th>Tổng phần</th>
@@ -60,6 +62,8 @@
                                     <td>@item.EmployeeId</td>
                                     <td>@item.FullName</td>
                                     <td>@item.DepartmentName</td>
+                                    <td>@item.Category</td>
+                                    <td>@item.UnitPrice.ToString("N0")</td>
                                     <td>@item.ManCount</td>
                                     <td>@item.ChayCount</td>
                                     <td>@item.TotalPortions</td>
@@ -70,7 +74,7 @@
                         </tbody>
                         <tfoot class="table-active">
                             <tr>
-                                <td colspan="5"><strong>Tổng cộng</strong></td>
+                                <td colspan="7"><strong>Tổng cộng</strong></td>
                                 <td>@ViewBag.TotalMan</td>
                                 <td>@ViewBag.TotalChay</td>
                                 <td>@ViewBag.GrandTotalPortions</td>

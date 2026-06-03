@@ -14,31 +14,36 @@ namespace CanteenSystem.Controllers
     {
         private CanteenDbContext db = new CanteenDbContext();
 
-        // GET: LeaderOrders 
+        // GET: LeaderOrders / Index
         public ActionResult Index(DateTime? date)
         {
             string role = Session["Role"]?.ToString();
             if (string.IsNullOrEmpty(role) || role != "Admin")
             {
-                // Không phải Admin → redirect về Login
                 return RedirectToAction("Login", "Account");
             }
 
             DateTime selectedDate = date ?? DateTime.Today.Date;
             bool isToday = selectedDate.Date == DateTime.Today.Date;
 
+            // Lấy danh sách order trong ngày
             var orders = db.LeaderOrders
                 .Include(o => o.Leader)
                 .Include(o => o.Meal)
                 .Where(o => DbFunctions.TruncateTime(o.Date) == selectedDate.Date)
-                .OrderBy(o => o.Leader.EmployeeId)
                 .ToList();
 
-            var allLeaders = db.Leaders.Include(l => l.Department).OrderBy(l => l.EmployeeId).ToList();
+            // Chỉ lấy cán bộ đang active (IsActive = true)
+            var allLeaders = db.Leaders
+                .Include(l => l.Department)
+                .Where(l => l.IsActive)
+                .OrderBy(l => l.EmployeeId)
+                .ToList();
 
             var viewModel = allLeaders.Select(l =>
             {
                 var order = orders.FirstOrDefault(o => o.EmployeeId == l.EmployeeId);
+
                 return new LeaderOrderViewModel
                 {
                     OrderId = order?.OrderId,
@@ -46,15 +51,18 @@ namespace CanteenSystem.Controllers
                     EmployeeId = l.EmployeeId,
                     FullName = l.FullName,
                     DepartmentName = l.Department?.DepartmentName ?? "Chưa gán",
-                    MealName = order?.Meal?.MealName ?? ".",
+                    MealName = order?.Meal?.MealName ?? "-",
                     Status = order?.Status ?? "Chưa đặt",
-                    Price = order?.Price ?? 30000M,
+                    Quantity = order?.Quantity ?? 0,           // Quan trọng
+                    Price = order?.Price ?? 35000M,
                     Date = selectedDate,
                     Creator = order?.Creator
                 };
             }).ToList();
 
             ViewBag.SelectedDate = selectedDate;
+
+            // Danh sách ngày để chọn
             var dates = db.LeaderOrders
                 .Select(o => DbFunctions.TruncateTime(o.Date))
                 .Distinct()
@@ -68,7 +76,6 @@ namespace CanteenSystem.Controllers
                 })
                 .ToList();
 
-            // Thêm ngày hiện tại nếu chưa có (để luôn có ngày mặc định)
             if (!dates.Any(d => d.Value == selectedDate.ToString("yyyy-MM-dd")))
             {
                 dates.Insert(0, new SelectListItem
@@ -81,19 +88,6 @@ namespace CanteenSystem.Controllers
 
             ViewBag.Dates = dates;
 
-            // Thêm ngày hiện tại nếu chưa có trong list
-            var datesList = ViewBag.Dates as List<SelectListItem>;
-            if (datesList != null && !datesList.Any(d => d.Value == selectedDate.ToString("yyyy-MM-dd")))
-            {
-                datesList.Insert(0, new SelectListItem
-                {
-                    Value = selectedDate.ToString("yyyy-MM-dd"),
-                    Text = selectedDate.ToString("dd/MM/yyyy"),
-                    Selected = true
-                });
-            }
-
-            // Nếu là ngày hôm nay và chưa có record nào → hiện thông báo thân thiện
             if (isToday && !orders.Any())
             {
                 ViewBag.NoOrderToday = true;
@@ -102,28 +96,28 @@ namespace CanteenSystem.Controllers
             return View(viewModel);
         }
 
-        // GET: LeaderOrders/Create (báo cơm ngày hôm nay)
+        // GET: LeaderOrders/Create
         public ActionResult Create()
         {
             string role = Session["Role"]?.ToString();
             if (string.IsNullOrEmpty(role) || role != "Admin")
             {
-                // Không phải Admin → redirect về Login
                 return RedirectToAction("Login", "Account");
             }
 
             DateTime today = DateTime.Today.Date;
 
-            // Khóa nếu ngày hôm nay đã có record
+            // Nếu ngày hôm nay đã có báo cơm thì chuyển sang Index
             if (db.LeaderOrders.Any(o => DbFunctions.TruncateTime(o.Date) == today))
             {
                 return RedirectToAction("Index", new { date = today });
             }
 
             var leaders = db.Leaders
-             .Include(l => l.Department)
-             .OrderBy(l => l.EmployeeId)
-             .ToList();
+                .Include(l => l.Department)
+                .Where(l => l.IsActive)
+                .OrderBy(l => l.EmployeeId)
+                .ToList();
 
             var meals = db.Meals.Where(m => m.ApplicableFor == "Leader").ToList();
 
@@ -133,7 +127,7 @@ namespace CanteenSystem.Controllers
             return View(leaders);
         }
 
-        // POST: LeaderOrders/Create (lưu batch toàn bộ cán bộ)
+        // POST: LeaderOrders/Create (Batch)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(DateTime selectedDate, int[] mealIds, string[] statuses)
@@ -143,11 +137,11 @@ namespace CanteenSystem.Controllers
                 return RedirectToAction("Index", new { date = selectedDate });
             }
 
-            var leaders = db.Leaders.ToList();
-            int savedCount = 0;
+            var leaders = db.Leaders.Where(l => l.IsActive).ToList();
 
             if (mealIds.Length != leaders.Count || statuses.Length != leaders.Count)
             {
+                TempData["Error"] = "Dữ liệu không hợp lệ!";
                 return RedirectToAction("Create");
             }
 
@@ -165,41 +159,25 @@ namespace CanteenSystem.Controllers
                     Date = selectedDate,
                     MealId = mealId,
                     Status = status,
-                    Price = meal.Price, // Lấy giá thực từ món ăn
+                    Quantity = (status == "Đặt") ? 1 : 0,     // Logic theo yêu cầu
+                    Price = meal.Price,
                     CreatedAt = DateTime.Now,
                     Creator = User.Identity.Name ?? "Admin"
                 };
 
                 db.LeaderOrders.Add(order);
-                savedCount++;
             }
 
             db.SaveChanges();
+            TempData["Success"] = "Báo cơm cán bộ thành công!";
             return RedirectToAction("Index", new { date = selectedDate });
         }
 
-        // GET: LeaderOrders/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            LeaderOrder leaderOrder = db.LeaderOrders.Find(id);
-            if (leaderOrder == null)
-            {
-                return HttpNotFound();
-            }
-            return View(leaderOrder);
-        }
-
-        // GET: LeaderOrders/Edit/5
+        // GET: LeaderOrders/Edit
         public ActionResult Edit(int? id, string employeeId, DateTime date)
         {
             if (string.IsNullOrEmpty(employeeId))
-            {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
 
             LeaderOrder order = null;
             if (id.HasValue)
@@ -207,7 +185,6 @@ namespace CanteenSystem.Controllers
                 order = db.LeaderOrders.Find(id.Value);
             }
 
-            // Nếu không tìm thấy record → tạo mới cho cán bộ này
             if (order == null)
             {
                 var leader = db.Leaders.FirstOrDefault(l => l.EmployeeId == employeeId);
@@ -218,7 +195,8 @@ namespace CanteenSystem.Controllers
                     EmployeeId = employeeId,
                     Date = date,
                     Status = "Chưa đặt",
-                    Price = 30000
+                    Quantity = 0,
+                    Price = 35000
                 };
             }
 
@@ -230,10 +208,10 @@ namespace CanteenSystem.Controllers
             return View(order);
         }
 
-        // POST: LeaderOrders/Edit/5
+        // POST: LeaderOrders/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "OrderId,EmployeeId,Date,MealId,Status,Price,CreatedAt,Creator,UpdatedAt,Modifier")] LeaderOrder order)
+        public ActionResult Edit([Bind(Include = "OrderId,EmployeeId,Date,MealId,Status,Quantity,Price,CreatedAt,Creator,UpdatedAt,Modifier")] LeaderOrder order)
         {
             if (ModelState.IsValid)
             {
@@ -253,9 +231,11 @@ namespace CanteenSystem.Controllers
                 }
 
                 db.SaveChanges();
+                TempData["Success"] = "Cập nhật thành công!";
                 return RedirectToAction("Index", new { date = order.Date });
             }
 
+            // Load lại nếu lỗi
             var meals = db.Meals.Where(m => m.ApplicableFor == "Leader").ToList();
             ViewBag.Meals = new SelectList(meals, "MealId", "MealName", order.MealId);
             ViewBag.Date = order.Date;
@@ -264,38 +244,34 @@ namespace CanteenSystem.Controllers
             return View(order);
         }
 
-        // GET: LeaderOrders/Delete/5
+        // GET: LeaderOrders/Delete
         public ActionResult Delete(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
+            if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
             LeaderOrder leaderOrder = db.LeaderOrders.Find(id);
-            if (leaderOrder == null)
-            {
-                return HttpNotFound();
-            }
+            if (leaderOrder == null) return HttpNotFound();
+
             return View(leaderOrder);
         }
 
-        // POST: LeaderOrders/Delete/5
+        // POST: LeaderOrders/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
             LeaderOrder leaderOrder = db.LeaderOrders.Find(id);
-            db.LeaderOrders.Remove(leaderOrder);
-            db.SaveChanges();
+            if (leaderOrder != null)
+            {
+                db.LeaderOrders.Remove(leaderOrder);
+                db.SaveChanges();
+            }
             return RedirectToAction("Index");
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
+            if (disposing) db.Dispose();
             base.Dispose(disposing);
         }
     }

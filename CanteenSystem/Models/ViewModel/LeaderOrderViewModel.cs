@@ -11,6 +11,7 @@ namespace CanteenSystem.Models.ViewModel
         public string DepartmentName { get; set; }
         public string MealName { get; set; }
         public string Status { get; set; }
+        public int Quantity { get; set; }
         public decimal Price { get; set; }
         public DateTime Date { get; set; }
         public string Creator { get; set; }

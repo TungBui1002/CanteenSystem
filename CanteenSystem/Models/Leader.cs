@@ -52,6 +52,15 @@ namespace CanteenSystem.Models
         [ForeignKey("DepartmentId")]
         public virtual Department Department { get; set; }
 
+        [StringLength(50)]
+        [Column("category")]
+        [Display(Name = "Phân loại")]
+        public string Category { get; set; }
+
+        [Column("is_active")]
+        [Display(Name = "Đang làm việc")]
+        public bool IsActive { get; set; } = true;  // true = đang làm, false = nghỉ việc
+
         public virtual ICollection<LeaderOrder> LeaderOrders { get; set; }
     }
 }
