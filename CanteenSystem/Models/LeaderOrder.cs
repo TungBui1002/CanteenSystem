@@ -32,6 +32,10 @@ namespace CanteenSystem.Models
         public string Status { get; set; }  // Đặt, Chưa đặt
 
         [Required]
+        [Column("quantity")]               
+        public int Quantity { get; set; }
+
+        [Required]
         [Range(0, double.MaxValue)]
         [Column("price")]
         public decimal Price { get; set; }

@@ -18,9 +18,9 @@
                             <a href="@Url.Action("Create")" class="btn btn-success">
                                 <i class="fas fa-plus"></i> Thêm cán bộ mới
                             </a>
-                            <a href="@Url.Action("Import")" class="btn btn-info ml-2">
+                            @*<a href="@Url.Action("Import")" class="btn btn-info ml-2">
                                 <i class="fas fa-file-import"></i> Import từ Excel
-                            </a>
+                            </a>*@
                         </p>
 
                         <!-- Tìm kiếm -->
@@ -39,11 +39,13 @@
                                 <thead class="thead-dark">
                                     <tr>
                                         <th>STT</th>
-                                        <th>Mã cán bộ</th>
+                                        <th>Mã số thẻ</th>
                                         <th>Họ tên</th>
                                         <th>Bộ phận</th>
                                         <th>Chức vụ</th>
-                                        <th>Trung tâm chi phí</th>
+                                        <th>Trung tâm chịu phí</th>
+                                        <th>Phân loại</th>
+                                        <th>Trạng thái</th>
                                         <th>Thao tác</th>
                                     </tr>
                                 </thead>
@@ -60,6 +62,9 @@
                                             <td>@Html.DisplayFor(modelItem => item.FullName)</td>
                                             <td>@Html.DisplayFor(modelItem => item.Department.DepartmentCode) @*- @Html.DisplayFor(modelItem => item.Department.DepartmentName)*@</td>
                                             <td>@Html.DisplayFor(modelItem => item.Rank)</td>
+                                            <td>@Html.DisplayFor(modelItem => item.CostCenter)</td>
+                                            <td>@Html.DisplayFor(modelItem => item.Category)</td>
+                                            <td>@Html.DisplayFor(modelItem => item.IsActive)</td>
                                             <td>@Html.DisplayFor(modelItem => item.CostCenter)</td>
                                             <td>
                                                 <a href="@Url.Action("Edit", new { id = item.EmployeeId })" class="btn btn-sm btn-warning">

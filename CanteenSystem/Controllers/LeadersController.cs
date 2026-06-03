@@ -15,15 +15,16 @@ namespace CanteenSystem.Controllers
     {
         private CanteenDbContext db = new CanteenDbContext();
 
+        // Danh sách phân loại cố định — chỉnh tại đây nếu cần thêm/bớt
+        private static readonly string[] CategoryOptions =
+            { "Trực tiếp", "Gián tiếp", "Quản lý", "Nghiệp vụ" };
+
         // GET: Leaders (với tìm kiếm)
         public ActionResult Index(string searchString)
         {
             string role = Session["Role"]?.ToString();
             if (string.IsNullOrEmpty(role) || role != "Admin")
-            {
-                // Không phải Admin → redirect về Login
                 return RedirectToAction("Login", "Account");
-            }
 
             var leaders = db.Leaders.Include(l => l.Department);
 
@@ -54,13 +55,14 @@ namespace CanteenSystem.Controllers
         public ActionResult Create()
         {
             ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentCode");
+            ViewBag.CategoryOptions = CategoryOptions;
             return View();
         }
 
         // POST: Leaders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "EmployeeId,CostCenter,DepartmentId,Rank,FullName")] Leader leader)
+        public ActionResult Create([Bind(Include = "EmployeeId,CostCenter,DepartmentId,Rank,FullName,Category,IsActive")] Leader leader)
         {
             if (ModelState.IsValid)
             {
@@ -76,6 +78,7 @@ namespace CanteenSystem.Controllers
             }
 
             ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentCode", leader.DepartmentId);
+            ViewBag.CategoryOptions = CategoryOptions;
             return View(leader);
         }
 
@@ -87,26 +90,26 @@ namespace CanteenSystem.Controllers
             if (leader == null) return HttpNotFound();
 
             ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentCode", leader.DepartmentId);
+            ViewBag.CategoryOptions = CategoryOptions;
             return View(leader);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "EmployeeId,CostCenter,DepartmentId,Rank,FullName")] Leader leader)  // Bỏ Creator/Modifier/CreatedAt/UpdatedAt khỏi Bind
+        public ActionResult Edit([Bind(Include = "EmployeeId,CostCenter,DepartmentId,Rank,FullName,Category,IsActive")] Leader leader)
         {
             if (ModelState.IsValid)
             {
-                // Lấy object cũ từ DB (để giữ Creator cũ)
                 var existing = db.Leaders.Find(leader.EmployeeId);
                 if (existing == null) return HttpNotFound();
 
-                // Chỉ update các field người dùng chỉnh sửa
                 existing.CostCenter = leader.CostCenter;
                 existing.DepartmentId = leader.DepartmentId;
                 existing.Rank = leader.Rank;
                 existing.FullName = leader.FullName;
+                existing.Category = leader.Category; 
+                existing.IsActive = leader.IsActive;  
 
-                // Cập nhật audit fields
                 existing.UpdatedAt = DateTime.Now;
                 existing.Modifier = User.Identity.Name ?? "Admin";
 
@@ -118,6 +121,7 @@ namespace CanteenSystem.Controllers
             }
 
             ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentCode", leader.DepartmentId);
+            ViewBag.CategoryOptions = CategoryOptions;
             return View(leader);
         }
 
@@ -172,25 +176,35 @@ namespace CanteenSystem.Controllers
                 {
                     var worksheet = package.Workbook.Worksheets["Sheet1"];
                     int rowCount = worksheet.Dimension.Rows;
-
                     int importedCount = 0;
 
-                    for (int row = 2; row <= rowCount; row++) // Bỏ header row 1
+                    for (int row = 2; row <= rowCount; row++)
                     {
                         string employeeId = worksheet.Cells[row, 1].Text?.Trim();
                         string fullName = worksheet.Cells[row, 2].Text?.Trim();
                         string departmentCode = worksheet.Cells[row, 3].Text?.Trim();
                         string rank = worksheet.Cells[row, 4].Text?.Trim();
                         string costCenter = worksheet.Cells[row, 5].Text?.Trim();
+                        string category = worksheet.Cells[row, 6].Text?.Trim();   
+                        string isActiveRaw = worksheet.Cells[row, 7].Text?.Trim();  
 
                         if (string.IsNullOrEmpty(employeeId) || string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(departmentCode))
                             continue;
 
                         var department = db.Departments.FirstOrDefault(d => d.DepartmentCode == departmentCode);
-                        if (department == null) continue; 
+                        if (department == null) continue;
 
                         if (db.Leaders.Any(l => l.EmployeeId == employeeId))
-                            continue; 
+                            continue;
+
+                        // Parse IsActive: mặc định true nếu cột trống hoặc giá trị không nhận ra
+                        bool isActive = true;
+                        if (!string.IsNullOrEmpty(isActiveRaw))
+                        {
+                            isActive = isActiveRaw != "0"
+                                       && !isActiveRaw.Equals("false", StringComparison.OrdinalIgnoreCase)
+                                       && !isActiveRaw.Equals("nghỉ", StringComparison.OrdinalIgnoreCase);
+                        }
 
                         var leader = new Leader
                         {
@@ -199,6 +213,8 @@ namespace CanteenSystem.Controllers
                             DepartmentId = department.DepartmentId,
                             Rank = rank,
                             CostCenter = costCenter,
+                            Category = category,   
+                            IsActive = isActive,   
                             CreatedAt = DateTime.Now,
                             Creator = User.Identity.Name ?? "Admin"
                         };
@@ -221,10 +237,7 @@ namespace CanteenSystem.Controllers
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
+            if (disposing) db.Dispose();
             base.Dispose(disposing);
         }
     }
