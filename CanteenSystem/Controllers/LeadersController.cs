@@ -17,7 +17,7 @@ namespace CanteenSystem.Controllers
 
         // Danh sách phân loại cố định — chỉnh tại đây nếu cần thêm/bớt
         private static readonly string[] CategoryOptions =
-            { "Trực tiếp", "Gián tiếp", "Quản lý", "Nghiệp vụ" };
+            { "Trực tiếp", "Gián tiếp", "Quản lý", "Nghiệp vụ", "Nghiên cứu phát triển 1", "Nghiên cứu phát triển 2", "Nghiên cứu phát triển 3"};
 
         // GET: Leaders (với tìm kiếm)
         public ActionResult Index(string searchString)

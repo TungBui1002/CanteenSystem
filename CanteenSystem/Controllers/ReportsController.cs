@@ -236,14 +236,22 @@ namespace CanteenSystem.Controllers
             // build report
             var report = BuildMealMonthlyReport(data);
 
-            // tổng
+            // TÍNH TỔNG THEO TỪNG GIỜ 
+            ViewBag.TotalDay06 = report.Sum(x => x.DayHours.ContainsKey("06:00") ? x.DayHours["06:00"] : 0);
+            ViewBag.TotalDay10 = report.Sum(x => x.DayHours.ContainsKey("10:00") ? x.DayHours["10:00"] : 0);
+            ViewBag.TotalDay1130 = report.Sum(x => x.DayHours.ContainsKey("11:30") ? x.DayHours["11:30"] : 0);
+            ViewBag.TotalDay12 = report.Sum(x => x.DayHours.ContainsKey("12:00") ? x.DayHours["12:00"] : 0);
+
+            ViewBag.TotalOvertime1630 = report.Sum(x => x.OvertimeHours.ContainsKey("16:30") ? x.OvertimeHours["16:30"] : 0);
+            ViewBag.TotalOvertime17 = report.Sum(x => x.OvertimeHours.ContainsKey("17:00") ? x.OvertimeHours["17:00"] : 0);
+
+            ViewBag.TotalNight20 = report.Sum(x => x.NightHours.ContainsKey("20:00") ? x.NightHours["20:00"] : 0);
+            ViewBag.TotalNight0130 = report.Sum(x => x.NightHours.ContainsKey("01:30") ? x.NightHours["01:30"] : 0);
+
             ViewBag.FromDate = start;
             ViewBag.ToDate = end;
             ViewBag.KitchenId = kitchenId;
 
-            ViewBag.TotalDay = report.Sum(x => x.DayTotal);
-            ViewBag.TotalOvertime = report.Sum(x => x.OvertimeTotal);
-            ViewBag.TotalNight = report.Sum(x => x.NightTotal);
             ViewBag.GrandTotalPortions = report.Sum(x => x.TotalPortions);
             ViewBag.GrandTotalCost = report.Sum(x => x.TotalCost);
 
@@ -300,40 +308,60 @@ namespace CanteenSystem.Controllers
                         DepartmentCode = dept?.DepartmentCode ?? "",
                         DepartmentName = dept?.DepartmentName ?? "",
                         PersonnelType = g.Key.PersonnelType ?? "",
+
                         DayHours = new Dictionary<string, int>(),
                         OvertimeHours = new Dictionary<string, int>(),
-                        NightHours = new Dictionary<string, int>()
+                        NightHours = new Dictionary<string, int>(),
+
+                        Night0130Mi = 0,
+                        Night0130ComMan = 0,
+                        Night0130ComChay = 0,
+                        Night0130Pho = 0
                     };
 
                     foreach (var m in g)
                     {
                         string timeStr = m.Time.ToString(@"hh\:mm");
+                        string mealName = (m.Meal?.MealName ?? "").ToLower().Trim();
 
-                        // === LOGIC THEO YÊU CẦU MỚI ===
+                        // LẤY GIÁ THỰC TẾ TỪ BẢNG MÓN ĂN
+                        decimal currentPrice = m.Meal?.Price ?? m.Price;   // Ưu tiên giá từ Meal
+
                         if (timeStr == "06:00" || timeStr == "10:00" || timeStr == "11:30" || timeStr == "12:00")
                         {
-                            // Ca sáng
                             if (!item.DayHours.ContainsKey(timeStr)) item.DayHours[timeStr] = 0;
                             item.DayHours[timeStr] += m.Quantity;
                             item.DayTotal += m.Quantity;
                         }
                         else if (timeStr == "16:30" || timeStr == "17:00")
                         {
-                            // Tăng ca
                             if (!item.OvertimeHours.ContainsKey(timeStr)) item.OvertimeHours[timeStr] = 0;
                             item.OvertimeHours[timeStr] += m.Quantity;
                             item.OvertimeTotal += m.Quantity;
                         }
                         else if (timeStr == "20:00" || timeStr == "01:30")
                         {
-                            // Ca đêm
                             if (!item.NightHours.ContainsKey(timeStr)) item.NightHours[timeStr] = 0;
                             item.NightHours[timeStr] += m.Quantity;
                             item.NightTotal += m.Quantity;
+
+                            if (timeStr == "01:30")
+                            {
+                                if (mealName.Contains("mì") || mealName.Contains("mi"))
+                                    item.Night0130Mi += m.Quantity;
+                                else if (mealName.Contains("mặn"))
+                                    item.Night0130ComMan += m.Quantity;
+                                else if (mealName.Contains("chay"))
+                                    item.Night0130ComChay += m.Quantity;
+                                else if (mealName.Contains("phở") || mealName.Contains("pho"))
+                                    item.Night0130Pho += m.Quantity;
+                                else
+                                    item.Night0130ComMan += m.Quantity; // fallback
+                            }
                         }
 
                         item.TotalPortions += m.Quantity;
-                        item.TotalCost += m.Price;
+                        item.TotalCost += currentPrice * m.Quantity;   // ← SỬA Ở ĐÂY
                     }
 
                     return item;
@@ -342,7 +370,7 @@ namespace CanteenSystem.Controllers
                 .ThenBy(x => x.PersonnelType)
                 .ToList();
 
-            // Đảm bảo tất cả giờ đều có key (hiển thị 0 nếu không có dữ liệu)
+            // Khởi tạo key
             string[] dayTimes = { "06:00", "10:00", "11:30", "12:00" };
             string[] overtimeTimes = { "16:30", "17:00" };
             string[] nightTimes = { "20:00", "01:30" };
@@ -357,65 +385,60 @@ namespace CanteenSystem.Controllers
             return report;
         }
 
-        private void CreateSheet(ExcelPackage package, string sheetName,List<MealMonthlyReportViewModel> report,DateTime start, DateTime end)
+        private void CreateSheet(ExcelPackage package, string sheetName, List<MealMonthlyReportViewModel> report, DateTime start, DateTime end)
         {
             var ws = package.Workbook.Worksheets.Add(sheetName);
 
             int row = 1;
 
-            // HEADER DÒNG 1
+            // ==================== HEADER DÒNG 1 ====================
             ws.Cells[row, 1].Value = "STT";
-            ws.Cells[row, 2].Value = "First Day";
-            ws.Cells[row, 3].Value = "Last Day";
-            ws.Cells[row, 4].Value = "Cost Center";
-            ws.Cells[row, 5].Value = "Dept.No";
-            ws.Cells[row, 6].Value = "Dept Name";
-            ws.Cells[row, 7].Value = "Type";
+            ws.Cells[row, 2].Value = "Ngày bắt đầu";
+            ws.Cells[row, 3].Value = "Ngày kết thúc";
+            ws.Cells[row, 4].Value = "TT chịu phí";
+            ws.Cells[row, 5].Value = "Mã bộ phận";
+            ws.Cells[row, 6].Value = "Tên bộ phận";
+            ws.Cells[row, 7].Value = "Phân loại";
 
-            ws.Cells[row, 8].Value = "Day Shift";
-            ws.Cells[row, 12].Value = "Overtime Shift";
-            ws.Cells[row, 14].Value = "Night Shift";
+            ws.Cells[row, 8].Value = "Ca ngày";
+            ws.Cells[row, 12].Value = "Tăng ca";
+            ws.Cells[row, 14].Value = "Ca đêm";
 
-            ws.Cells[row, 16].Value = "Total Portions";
-            ws.Cells[row, 17].Value = "Total Cost (VND)";
+            ws.Cells[row, 20].Value = "Tổng phần";
+            ws.Cells[row, 21].Value = "Tổng tiền (VNĐ)";
 
-            // MERGE
-            ws.Cells[1, 1, 2, 1].Merge = true;
-            ws.Cells[1, 2, 2, 2].Merge = true;
-            ws.Cells[1, 3, 2, 3].Merge = true;
-            ws.Cells[1, 4, 2, 4].Merge = true;
-            ws.Cells[1, 5, 2, 5].Merge = true;
-            ws.Cells[1, 6, 2, 6].Merge = true;
-            ws.Cells[1, 7, 2, 7].Merge = true;
+            // Merge
+            ws.Cells[1, 8, 1, 11].Merge = true;   // Ca ngày
+            ws.Cells[1, 12, 1, 13].Merge = true;  // Tăng ca
+            ws.Cells[1, 14, 1, 19].Merge = true;  // Ca đêm (6 cột)
 
-            ws.Cells[1, 8, 1, 11].Merge = true;
-            ws.Cells[1, 12, 1, 13].Merge = true;
-            ws.Cells[1, 14, 1, 15].Merge = true;
-
-            ws.Cells[1, 16, 2, 16].Merge = true;
-            ws.Cells[1, 17, 2, 17].Merge = true;
-
-            // HEADER DÒNG 2
+            // ==================== HEADER DÒNG 2 ====================
             row = 2;
 
+            // Ca ngày
             ws.Cells[row, 8].Value = "06:00";
             ws.Cells[row, 9].Value = "10:00";
             ws.Cells[row, 10].Value = "11:30";
             ws.Cells[row, 11].Value = "12:00";
 
+            // Tăng ca
             ws.Cells[row, 12].Value = "16:30";
             ws.Cells[row, 13].Value = "17:00";
 
+            // Ca đêm
             ws.Cells[row, 14].Value = "20:00";
             ws.Cells[row, 15].Value = "01:30";
+            ws.Cells[row, 16].Value = "Mì 01:30";
+            ws.Cells[row, 17].Value = "Mặn 01:30";
+            ws.Cells[row, 18].Value = "Chay 01:30";
+            ws.Cells[row, 19].Value = "Phở 01:30";
 
-            // STYLE HEADER
-            using (var range = ws.Cells[1, 1, 2, 17])
+            // Style header
+            using (var range = ws.Cells[1, 1, 2, 21])
             {
                 range.Style.Font.Bold = true;
                 range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-                range.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin);
             }
 
             row = 3;
@@ -432,38 +455,38 @@ namespace CanteenSystem.Controllers
                 ws.Cells[row, 6].Value = item.DepartmentName;
                 ws.Cells[row, 7].Value = item.PersonnelType;
 
+                // Ca ngày
                 ws.Cells[row, 8].Value = item.DayHours.ContainsKey("06:00") ? item.DayHours["06:00"] : 0;
                 ws.Cells[row, 9].Value = item.DayHours.ContainsKey("10:00") ? item.DayHours["10:00"] : 0;
                 ws.Cells[row, 10].Value = item.DayHours.ContainsKey("11:30") ? item.DayHours["11:30"] : 0;
                 ws.Cells[row, 11].Value = item.DayHours.ContainsKey("12:00") ? item.DayHours["12:00"] : 0;
 
+                // Tăng ca
                 ws.Cells[row, 12].Value = item.OvertimeHours.ContainsKey("16:30") ? item.OvertimeHours["16:30"] : 0;
                 ws.Cells[row, 13].Value = item.OvertimeHours.ContainsKey("17:00") ? item.OvertimeHours["17:00"] : 0;
 
+                // Ca đêm
                 ws.Cells[row, 14].Value = item.NightHours.ContainsKey("20:00") ? item.NightHours["20:00"] : 0;
                 ws.Cells[row, 15].Value = item.NightHours.ContainsKey("01:30") ? item.NightHours["01:30"] : 0;
+                ws.Cells[row, 16].Value = item.Night0130Mi;
+                ws.Cells[row, 17].Value = item.Night0130ComMan;
+                ws.Cells[row, 18].Value = item.Night0130ComChay;
+                ws.Cells[row, 19].Value = item.Night0130Pho;
 
-                ws.Cells[row, 16].Value = item.TotalPortions;
-                ws.Cells[row, 17].Value = item.TotalCost;
-
-                ws.Cells[row, 17].Style.Numberformat.Format = "#,##0";
+                ws.Cells[row, 20].Value = item.TotalPortions;
+                ws.Cells[row, 21].Value = item.TotalCost;
+                ws.Cells[row, 21].Style.Numberformat.Format = "#,##0";
 
                 row++;
             }
 
-            // TỔNG
+            // ==================== TỔNG CỘNG ====================
             ws.Cells[row, 1].Value = "Tổng cộng";
             ws.Cells[row, 1, row, 7].Merge = true;
 
-            ws.Cells[row, 16].Value = report.Sum(x => x.TotalPortions);
-            ws.Cells[row, 17].Value = report.Sum(x => x.TotalCost);
-
-            ws.Cells[row, 17].Style.Numberformat.Format = "#,##0";
-
-            using (var range = ws.Cells[row, 1, row, 17])
-            {
-                range.Style.Font.Bold = true;
-            }
+            ws.Cells[row, 20].Value = report.Sum(x => x.TotalPortions);
+            ws.Cells[row, 21].Value = report.Sum(x => x.TotalCost);
+            ws.Cells[row, 20, row, 21].Style.Font.Bold = true;
 
             ws.Cells.AutoFitColumns();
         }
