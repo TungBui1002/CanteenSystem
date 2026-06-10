@@ -24,5 +24,10 @@ namespace CanteenSystem.Models.ViewModel
 
         public int TotalPortions { get; set; }
         public decimal TotalCost { get; set; }
+
+        public int Night0130Mi { get; set; }          // Mì ăn liền 01:30
+        public int Night0130ComMan { get; set; }      // Cơm mặn 01:30
+        public int Night0130ComChay { get; set; }     // Cơm chay 01:30
+        public int Night0130Pho { get; set; }         // Phở 01:30
     }
 }

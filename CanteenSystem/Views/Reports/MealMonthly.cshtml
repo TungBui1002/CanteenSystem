@@ -49,17 +49,17 @@
                         <thead class="thead-dark">
                             <tr>
                                 <th rowspan="2">STT</th>
-                                <th rowspan="2">First Day</th>
-                                <th rowspan="2">Last Day</th>
-                                <th rowspan="2">Cost Center</th>
-                                <th rowspan="2">Dept.No</th>
-                                <th rowspan="2">Dept Name</th>
-                                <th rowspan="2">Type</th>
-                                <th colspan="4">Day Shift</th>
-                                <th colspan="2">Overtime Shift</th>
-                                <th colspan="2">Night Shift</th>
-                                <th rowspan="2">Total Portions</th>
-                                <th rowspan="2">Total Cost (VND)</th>
+                                <th rowspan="2">Ngày bắt đầu</th>
+                                <th rowspan="2">Ngày kết thúc</th>
+                                <th rowspan="2">TT chịu phí</th>
+                                <th rowspan="2">Mã bộ phận</th>
+                                <th rowspan="2">Tên bộ phận</th>
+                                <th rowspan="2">Phân loại</th>
+                                <th colspan="4">Ca ngày</th>
+                                <th colspan="2">Tăng ca</th>
+                                <th colspan="2">Ca đêm</th>
+                                <th rowspan="2">Tổng phần</th>
+                                <th rowspan="2">Tổng tiền (VND)</th>
                             </tr>
                             <tr>
                                 <th>06:00</th>
@@ -113,17 +113,21 @@
                         <tfoot class="table-active">
                             <tr>
                                 <td colspan="7"><strong>Tổng cộng</strong></td>
+
+                                <!-- Ca Ngày -->
                                 <td>@ViewBag.TotalDay06</td>
                                 <td>@ViewBag.TotalDay10</td>
                                 <td>@ViewBag.TotalDay1130</td>
                                 <td>@ViewBag.TotalDay12</td>
-                                @*<td>@ViewBag.TotalDay</td>*@
+
+                                <!-- Tăng ca -->
                                 <td>@ViewBag.TotalOvertime1630</td>
                                 <td>@ViewBag.TotalOvertime17</td>
-                                @*<td>@ViewBag.TotalOvertime</td>*@
-                                <td>@ViewBag.TotalOvertime20</td>
+
+                                <!-- Ca Đêm -->
+                                <td>@ViewBag.TotalNight20</td>
                                 <td>@ViewBag.TotalNight0130</td>
-                                @*<td>@ViewBag.TotalNight</td>*@
+
                                 <td>@ViewBag.GrandTotalPortions</td>
                                 <td>@ViewBag.GrandTotalCost.ToString("N0")</td>
                             </tr>
