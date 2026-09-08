@@ -318,9 +318,7 @@ namespace CanteenSystem.Controllers
                         NightHours = new Dictionary<string, int>(),
                     };
 
-                    const int MealIdMi = 7;           // Món Mì — giá 17,000đ
-                    const decimal Price17k = 17000m;
-                    const decimal Price25k = 25000m;
+                    const int MealIdMi = 7;  // Món Mì
 
                     foreach (var m in g)
                     {
@@ -346,22 +344,23 @@ namespace CanteenSystem.Controllers
                             item.NightTotal += m.Quantity;
                         }
 
-                        // --- Phân loại 17k / 25k theo MealId ---
+                        // --- Phân loại theo MealId ---
+                        // m.Price trong DB = tổng tiền (đơn giá × Quantity) — lấy thẳng, không nhân lại
                         if (m.MealId == MealIdMi)
                         {
                             item.Qty17k += m.Quantity;
-                            item.Total17k += Price17k * m.Quantity;
+                            item.Total17k += m.Price;
                         }
                         else
                         {
                             item.Qty25k += m.Quantity;
-                            item.Total25k += Price25k * m.Quantity;
+                            item.Total25k += m.Price;
                         }
 
                         item.TotalPortions += m.Quantity;
                     }
 
-                    // Tổng tiền = 17k + 25k
+                    // Tổng tiền = tiền mì + tiền các món còn lại
                     item.TotalCost = item.Total17k + item.Total25k;
 
                     return item;
@@ -404,11 +403,11 @@ namespace CanteenSystem.Controllers
             ws.Cells[row, 12].Value = "Tăng ca";
             ws.Cells[row, 14].Value = "Ca đêm";
 
-            ws.Cells[row, 16].Value = "SL 17k";
+            ws.Cells[row, 16].Value = "SL 20k";
             ws.Cells[row, 17].Value = "SL 25k";
             ws.Cells[row, 18].Value = "Tổng phần";
             ws.Cells[row, 19].Value = "Tổng tiền (VNĐ)";
-            ws.Cells[row, 20].Value = "Tổng giá 17K";
+            ws.Cells[row, 20].Value = "Tổng giá 20K";
             ws.Cells[row, 21].Value = "Tổng giá 25K";
 
             // Merge
