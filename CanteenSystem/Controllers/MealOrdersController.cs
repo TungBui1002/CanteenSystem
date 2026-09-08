@@ -56,7 +56,7 @@ namespace CanteenSystem.Controllers
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName");
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName");
             ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" });
-            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", "Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" });
+            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", "Gián tiếp", "Quản lý", "Tiêu thụ", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" });
 
             ViewBag.SelectedDate = reportDate;
             ViewBag.IsAdmin = (role == "Admin");
@@ -91,7 +91,7 @@ namespace CanteenSystem.Controllers
                     "Ca đêm", new Dictionary<string, List<string>>
                     {
                         { "20:00", new List<string> { "Mì" } },
-                        { "01:30", new List<string> { "Cơm mặn", "Cơm chay", "Phở", "Mì" } }
+                        { "01:30", new List<string> { "Cơm mặn", "Cơm chay", "Phở" } }
                     }
                 }
             };
@@ -304,7 +304,7 @@ namespace CanteenSystem.Controllers
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName", mealOrder.MealId);
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
             ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" }, mealOrder.Shift);
-            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
+            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Tiêu thụ", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
 
             var timeOptions = new Dictionary<string, List<string>>
             {
@@ -367,7 +367,7 @@ namespace CanteenSystem.Controllers
             ViewBag.MealId = new SelectList(meals, "MealId", "MealName", mealOrder.MealId);
             ViewBag.KitchenId = new SelectList(kitchens, "KitchenId", "KitchenName", mealOrder.KitchenId);
             ViewBag.Shift = new SelectList(new[] { "Ca sáng", "Tăng ca", "Ca đêm" }, mealOrder.Shift);
-            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
+            ViewBag.PersonnelType = new SelectList(new[] { "Trực tiếp", " Gián tiếp", "Quản lý", "Tiêu thụ", "Nghiệp vụ", "NCPT1", "NCPT2", "NCPT3" }, mealOrder.PersonnelType);
 
             var timeOptions2 = new Dictionary<string, List<string>>
             {

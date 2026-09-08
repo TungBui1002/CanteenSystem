@@ -15,7 +15,7 @@ namespace CanteenSystem.Controllers
     public class ReportsController : Controller
     {
         private CanteenDbContext db = new CanteenDbContext();
-        
+
         // GET: Reports
         public ActionResult Index()
         {
@@ -46,7 +46,7 @@ namespace CanteenSystem.Controllers
             var orders = db.LeaderOrders
                 .Include(o => o.Meal)
                 .Include(o => o.Leader)
-                .Where(o => o.Date >= start && o.Date <= end)
+                .Where(o => o.Date >= start && o.Date <= end && o.Leader.IsActive)
                 .ToList();
 
             var report = orders
@@ -104,7 +104,7 @@ namespace CanteenSystem.Controllers
             var orders = db.LeaderOrders
                 .Include(o => o.Meal)
                 .Include(o => o.Leader)
-                .Where(o => o.Date >= start && o.Date <= end)
+                .Where(o => o.Date >= start && o.Date <= end && o.Leader.IsActive)
                 .ToList();
 
             var report = orders
@@ -205,7 +205,7 @@ namespace CanteenSystem.Controllers
             return View(report);
         }
 
-        // ---------------------------------------------- BÁO CÁO THÁNG BỘ PHẬN ---------------------------------------------------------
+        // --------------------------------------------------- BÁO CÁO THÁNG BỘ PHẬN ---------------------------------------------------------------------------//
 
         // GET: Reports/MealMonthly
         public ActionResult MealMonthly(DateTime? fromDate, DateTime? toDate, int? kitchenId)
@@ -254,6 +254,10 @@ namespace CanteenSystem.Controllers
 
             ViewBag.GrandTotalPortions = report.Sum(x => x.TotalPortions);
             ViewBag.GrandTotalCost = report.Sum(x => x.TotalCost);
+            ViewBag.GrandQty17k = report.Sum(x => x.Qty17k);
+            ViewBag.GrandQty25k = report.Sum(x => x.Qty25k);
+            ViewBag.GrandTotal17k = report.Sum(x => x.Total17k);
+            ViewBag.GrandTotal25k = report.Sum(x => x.Total25k);
 
             return View(report);
         }
@@ -312,21 +316,17 @@ namespace CanteenSystem.Controllers
                         DayHours = new Dictionary<string, int>(),
                         OvertimeHours = new Dictionary<string, int>(),
                         NightHours = new Dictionary<string, int>(),
-
-                        Night0130Mi = 0,
-                        Night0130ComMan = 0,
-                        Night0130ComChay = 0,
-                        Night0130Pho = 0
                     };
+
+                    const int MealIdMi = 7;           // Món Mì — giá 17,000đ
+                    const decimal Price17k = 17000m;
+                    const decimal Price25k = 25000m;
 
                     foreach (var m in g)
                     {
                         string timeStr = m.Time.ToString(@"hh\:mm");
-                        string mealName = (m.Meal?.MealName ?? "").ToLower().Trim();
 
-                        // LẤY GIÁ THỰC TẾ TỪ BẢNG MÓN ĂN
-                        decimal currentPrice = m.Meal?.Price ?? m.Price;   // Ưu tiên giá từ Meal
-
+                        // --- Phân ca theo giờ ---
                         if (timeStr == "06:00" || timeStr == "10:00" || timeStr == "11:30" || timeStr == "12:00")
                         {
                             if (!item.DayHours.ContainsKey(timeStr)) item.DayHours[timeStr] = 0;
@@ -344,25 +344,25 @@ namespace CanteenSystem.Controllers
                             if (!item.NightHours.ContainsKey(timeStr)) item.NightHours[timeStr] = 0;
                             item.NightHours[timeStr] += m.Quantity;
                             item.NightTotal += m.Quantity;
+                        }
 
-                            if (timeStr == "01:30")
-                            {
-                                if (mealName.Contains("mì") || mealName.Contains("mi"))
-                                    item.Night0130Mi += m.Quantity;
-                                else if (mealName.Contains("mặn"))
-                                    item.Night0130ComMan += m.Quantity;
-                                else if (mealName.Contains("chay"))
-                                    item.Night0130ComChay += m.Quantity;
-                                else if (mealName.Contains("phở") || mealName.Contains("pho"))
-                                    item.Night0130Pho += m.Quantity;
-                                else
-                                    item.Night0130ComMan += m.Quantity; // fallback
-                            }
+                        // --- Phân loại 17k / 25k theo MealId ---
+                        if (m.MealId == MealIdMi)
+                        {
+                            item.Qty17k += m.Quantity;
+                            item.Total17k += Price17k * m.Quantity;
+                        }
+                        else
+                        {
+                            item.Qty25k += m.Quantity;
+                            item.Total25k += Price25k * m.Quantity;
                         }
 
                         item.TotalPortions += m.Quantity;
-                        item.TotalCost += currentPrice * m.Quantity;   // ← SỬA Ở ĐÂY
                     }
+
+                    // Tổng tiền = 17k + 25k
+                    item.TotalCost = item.Total17k + item.Total25k;
 
                     return item;
                 })
@@ -404,13 +404,17 @@ namespace CanteenSystem.Controllers
             ws.Cells[row, 12].Value = "Tăng ca";
             ws.Cells[row, 14].Value = "Ca đêm";
 
-            ws.Cells[row, 20].Value = "Tổng phần";
-            ws.Cells[row, 21].Value = "Tổng tiền (VNĐ)";
+            ws.Cells[row, 16].Value = "SL 17k";
+            ws.Cells[row, 17].Value = "SL 25k";
+            ws.Cells[row, 18].Value = "Tổng phần";
+            ws.Cells[row, 19].Value = "Tổng tiền (VNĐ)";
+            ws.Cells[row, 20].Value = "Tổng giá 17K";
+            ws.Cells[row, 21].Value = "Tổng giá 25K";
 
             // Merge
             ws.Cells[1, 8, 1, 11].Merge = true;   // Ca ngày
             ws.Cells[1, 12, 1, 13].Merge = true;  // Tăng ca
-            ws.Cells[1, 14, 1, 19].Merge = true;  // Ca đêm (6 cột)
+            ws.Cells[1, 14, 1, 15].Merge = true;  // Ca đêm (2 cột: 20:00 và 01:30)
 
             // ==================== HEADER DÒNG 2 ====================
             row = 2;
@@ -428,10 +432,6 @@ namespace CanteenSystem.Controllers
             // Ca đêm
             ws.Cells[row, 14].Value = "20:00";
             ws.Cells[row, 15].Value = "01:30";
-            ws.Cells[row, 16].Value = "Mì 01:30";
-            ws.Cells[row, 17].Value = "Mặn 01:30";
-            ws.Cells[row, 18].Value = "Chay 01:30";
-            ws.Cells[row, 19].Value = "Phở 01:30";
 
             // Style header
             using (var range = ws.Cells[1, 1, 2, 21])
@@ -468,13 +468,17 @@ namespace CanteenSystem.Controllers
                 // Ca đêm
                 ws.Cells[row, 14].Value = item.NightHours.ContainsKey("20:00") ? item.NightHours["20:00"] : 0;
                 ws.Cells[row, 15].Value = item.NightHours.ContainsKey("01:30") ? item.NightHours["01:30"] : 0;
-                ws.Cells[row, 16].Value = item.Night0130Mi;
-                ws.Cells[row, 17].Value = item.Night0130ComMan;
-                ws.Cells[row, 18].Value = item.Night0130ComChay;
-                ws.Cells[row, 19].Value = item.Night0130Pho;
 
-                ws.Cells[row, 20].Value = item.TotalPortions;
-                ws.Cells[row, 21].Value = item.TotalCost;
+                // Phân loại giá
+                ws.Cells[row, 16].Value = item.Qty17k;
+                ws.Cells[row, 17].Value = item.Qty25k;
+                ws.Cells[row, 18].Value = item.TotalPortions;
+                ws.Cells[row, 19].Value = item.TotalCost;
+                ws.Cells[row, 20].Value = item.Total17k;
+                ws.Cells[row, 21].Value = item.Total25k;
+
+                ws.Cells[row, 19].Style.Numberformat.Format = "#,##0";
+                ws.Cells[row, 20].Style.Numberformat.Format = "#,##0";
                 ws.Cells[row, 21].Style.Numberformat.Format = "#,##0";
 
                 row++;
@@ -484,9 +488,17 @@ namespace CanteenSystem.Controllers
             ws.Cells[row, 1].Value = "Tổng cộng";
             ws.Cells[row, 1, row, 7].Merge = true;
 
-            ws.Cells[row, 20].Value = report.Sum(x => x.TotalPortions);
-            ws.Cells[row, 21].Value = report.Sum(x => x.TotalCost);
-            ws.Cells[row, 20, row, 21].Style.Font.Bold = true;
+            ws.Cells[row, 16].Value = report.Sum(x => x.Qty17k);
+            ws.Cells[row, 17].Value = report.Sum(x => x.Qty25k);
+            ws.Cells[row, 18].Value = report.Sum(x => x.TotalPortions);
+            ws.Cells[row, 19].Value = report.Sum(x => x.TotalCost);
+            ws.Cells[row, 20].Value = report.Sum(x => x.Total17k);
+            ws.Cells[row, 21].Value = report.Sum(x => x.Total25k);
+
+            ws.Cells[row, 16, row, 21].Style.Font.Bold = true;
+            ws.Cells[row, 19].Style.Numberformat.Format = "#,##0";
+            ws.Cells[row, 20].Style.Numberformat.Format = "#,##0";
+            ws.Cells[row, 21].Style.Numberformat.Format = "#,##0";
 
             ws.Cells.AutoFitColumns();
         }

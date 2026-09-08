@@ -25,9 +25,10 @@ namespace CanteenSystem.Models.ViewModel
         public int TotalPortions { get; set; }
         public decimal TotalCost { get; set; }
 
-        public int Night0130Mi { get; set; }          // Mì ăn liền 01:30
-        public int Night0130ComMan { get; set; }      // Cơm mặn 01:30
-        public int Night0130ComChay { get; set; }     // Cơm chay 01:30
-        public int Night0130Pho { get; set; }         // Phở 01:30
+        // Phân loại theo giá
+        public int Qty17k { get; set; }       // Món Mì (MealId = 7), giá 17,000đ
+        public int Qty25k { get; set; }       // Các món còn lại, giá 25,000đ
+        public decimal Total17k { get; set; } // Qty17k × 17,000
+        public decimal Total25k { get; set; } // Qty25k × 25,000
     }
 }

@@ -31,7 +31,6 @@
                                 <option value="1" @(ViewBag.KitchenId?.ToString() == "1" ? "selected" : "")>Nhà Nam Phong</option>
                                 <option value="2" @(ViewBag.KitchenId?.ToString() == "2" ? "selected" : "")>Nhà Hồng Phát</option>
                             </select>
-
                         </div>
                         <div class="col-md-4 align-self-end">
                             <button type="submit" class="btn btn-primary">Xem báo cáo</button>
@@ -58,8 +57,12 @@
                                 <th colspan="4">Ca ngày</th>
                                 <th colspan="2">Tăng ca</th>
                                 <th colspan="2">Ca đêm</th>
-                                <th rowspan="2">Tổng phần</th>
-                                <th rowspan="2">Tổng tiền (VND)</th>
+                                @*<th rowspan="2">Tổng phần</th>*@
+                                <th rowspan="2">SL 17k</th>
+                                <th rowspan="2">SL 25k</th>
+                                <th rowspan="2">Tổng tiền</th>
+                                @*<th rowspan="2">Tổng giá 17K</th>
+                                <th rowspan="2">Tổng giá 25K</th>*@
                             </tr>
                             <tr>
                                 <th>06:00</th>
@@ -104,8 +107,12 @@
                                     <td>@(item.NightHours.ContainsKey("20:00") ? item.NightHours["20:00"] : 0)</td>
                                     <td>@(item.NightHours.ContainsKey("01:30") ? item.NightHours["01:30"] : 0)</td>
 
-                                    <td>@item.TotalPortions</td>
+                                    @*<td>@item.TotalPortions</td>*@
+                                    <td>@item.Qty17k</td>
+                                    <td>@item.Qty25k</td>
                                     <td>@item.TotalCost.ToString("N0")</td>
+                                    @*<td>@item.Total17k.ToString("N0")</td>
+                                    <td>@item.Total25k.ToString("N0")</td>*@
                                 </tr>
                                 stt++;
                             }
@@ -128,8 +135,12 @@
                                 <td>@ViewBag.TotalNight20</td>
                                 <td>@ViewBag.TotalNight0130</td>
 
-                                <td>@ViewBag.GrandTotalPortions</td>
+                                @*<td>@ViewBag.GrandTotalPortions</td>*@
+                                <td>@ViewBag.GrandQty17k</td>
+                                <td>@ViewBag.GrandQty25k</td>
                                 <td>@ViewBag.GrandTotalCost.ToString("N0")</td>
+                                @*<td>@ViewBag.GrandTotal17k.ToString("N0")</td>
+                                <td>@ViewBag.GrandTotal25k.ToString("N0")</td>*@
                             </tr>
                         </tfoot>
                     </table>
